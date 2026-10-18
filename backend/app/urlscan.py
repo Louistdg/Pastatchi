@@ -7,6 +7,11 @@ import json
 import re
 import socket
 import ssl
+import datetime
+import tldextract
+from pathlib import Path
+from .storage import RdapCache
+from .security_log import security_event
 from html.parser import HTMLParser
 from urllib.parse import urljoin, urlsplit, urlunsplit
 
@@ -15,6 +20,8 @@ MAX_REDIRECTS = 3
 TIMEOUT = 5
 USER_AGENT = "PastaTshield/0.1 (+local-requested-passive-inspection)"
 BLOCKED_SUFFIXES = (".local", ".localhost", ".internal", ".home", ".lan", ".test", ".invalid", ".onion")
+PUBLIC_SUFFIX = tldextract.TLDExtract(suffix_list_urls=(), cache_dir=False)
+RDAP_CACHE = RdapCache(Path(__file__).resolve().parents[2] / "data" / "rdap-cache.sqlite3")
 TRACKERS = ("google-analytics.com", "googletagmanager.com", "doubleclick.net",
             "facebook.net", "connect.facebook.net", "hotjar.com", "clarity.ms", "tiktok.com")
 
@@ -67,6 +74,7 @@ def ensure_public_host(host: str, port: int) -> str:
             if not ipaddress.ip_address(address).is_global:
                 raise ValueError("Adresse interne/réservée refusée par la protection anti-SSRF.")
         except ValueError as exc:
+            security_event("SSRF_REJECTED")
             raise ValueError("Adresse interne/réservée ou invalide refusée par la protection anti-SSRF.") from exc
     return addresses[0]
 
@@ -114,8 +122,10 @@ def _fetch_once(url: str) -> dict:
         conn.close()
 
 
-def fetch_site(target: str, max_redirects: int = MAX_REDIRECTS) -> tuple[dict, list[dict]]:
+def fetch_site(target: str, max_redirects: int = MAX_REDIRECTS, require_https: bool = False) -> tuple[dict, list[dict]]:
     current = normalize_target(target)
+    if require_https and not current.startswith("https://"):
+        raise ValueError("RDAP impose une connexion HTTPS.")
     chain = []
     for redirect in range(max_redirects + 1):
         fetched = _fetch_once(current)
@@ -124,6 +134,8 @@ def fetch_site(target: str, max_redirects: int = MAX_REDIRECTS) -> tuple[dict, l
             if redirect == max_redirects:
                 raise ValueError("Trop de redirections ; limite de trois.")
             current = normalize_target(urljoin(current, fetched["location"]))
+            if require_https and not current.startswith("https://"):
+                raise ValueError("Redirection RDAP vers HTTP refusée.")
             continue
         return fetched, chain
     raise ValueError("La chaîne de redirection a dépassé la limite.")
@@ -133,6 +145,8 @@ class _PageInspector(HTMLParser):
     def __init__(self, page_url: str):
         super().__init__(convert_charrefs=True)
         self.url = page_url
+        self.base = page_url
+        self.seen_base = False
         self.inputs: set[str] = set()
         self.external_scripts: set[str] = set()
         self.form_actions: list[str] = []
@@ -140,6 +154,10 @@ class _PageInspector(HTMLParser):
 
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]):
         attrs_dict = dict(attrs)
+        if tag == "base" and attrs_dict.get("href") and not self.seen_base:
+            self.base = urljoin(self.url, attrs_dict["href"])
+            self.seen_base = True
+            return
         if tag == "form":
             self.form_count += 1
             self.form_actions.append(attrs_dict.get("action") or self.url)
@@ -159,7 +177,7 @@ class _PageInspector(HTMLParser):
             if "address" in name:
                 self.inputs.add("Adresse postale")
         if tag in {"script", "img", "iframe"} and attrs_dict.get("src"):
-            full = urljoin(self.url, attrs_dict["src"])
+            full = urljoin(self.base, attrs_dict["src"])
             domain = urlsplit(full).hostname
             if domain and domain != urlsplit(self.url).hostname:
                 self.external_scripts.add(domain)
@@ -175,18 +193,22 @@ def inspect_html(html: str, page_url: str) -> dict:
         "data_requested": sorted(inspector.inputs),
         "third_party_domains": sorted(inspector.external_scripts),
         "known_trackers": sorted(d for d in inspector.external_scripts if any(d == t or d.endswith("." + t) for t in TRACKERS)),
-        "insecure_forms": sum(1 for action in inspector.form_actions if urlsplit(urljoin(page_url, action)).scheme == "http"),
+        "insecure_forms": sum(1 for action in inspector.form_actions if urlsplit(urljoin(inspector.base, action)).scheme == "http"),
         "domain": domain,
     }
 
 
+def registrable_domain(host: str) -> str:
+    extracted = PUBLIC_SUFFIX(host)
+    if not extracted.domain or not extracted.suffix:
+        raise ValueError("Suffixe public introuvable : domaine non vérifiable via RDAP.")
+    return extracted.domain + "." + extracted.suffix
+
+
 def _rdap_domain(host: str) -> dict:
-    """Only called after explicit consent. RDAP registry may redirect."""
-    import datetime
-    parts = host.split(".")
-    # Minimal domain extraction; no assertion that subdomain boundaries are always registrable.
-    candidate = ".".join(parts[-2:])
-    result, _ = fetch_site("https://rdap.org/domain/" + candidate, max_redirects=2)
+    """Consultation RDAP par HTTPS après consentement explicite."""
+    candidate = registrable_domain(host)
+    result, _ = fetch_site("https://rdap.org/domain/" + candidate, max_redirects=2, require_https=True)
     if result["status"] != 200:
         raise ValueError(f"Serveur RDAP : HTTP {result['status']}")
     payload = json.loads(result["body"])
@@ -197,6 +219,18 @@ def _rdap_domain(host: str) -> dict:
             age = (datetime.datetime.now(datetime.timezone.utc).date() - created).days
             return {"age_days": age, "registered": date}
     raise ValueError("Date d'enregistrement non publiée.")
+
+
+def _rdap_domain_cached(host: str) -> tuple[dict, bool]:
+    """La conservation du domaine dans le cache reste locale, limitée à 24h."""
+    candidate = registrable_domain(host)
+    cached_date = RDAP_CACHE.get(candidate)
+    if cached_date:
+        age = (datetime.datetime.now(datetime.timezone.utc).date() - datetime.date.fromisoformat(cached_date)).days
+        return {"age_days": age, "registered": cached_date}, True
+    result = _rdap_domain(host)
+    RDAP_CACHE.put(candidate, result["registered"])
+    return result, False
 
 
 def analyze_url(url: str, mode: str = "renforce", external_consent: bool = False) -> dict:
@@ -228,10 +262,14 @@ def analyze_url(url: str, mode: str = "renforce", external_consent: bool = False
         if fetched["status"] >= 400:
             limitations.append(f"Le serveur a répondu HTTP {fetched['status']} ; l'analyse du contenu peut être incomplète.")
     except Exception as exc:
+        security_event("URL_FETCH_FAILED")
         fetch_error = str(exc)
         checks.append({"name": "Connexion au site", "status": "non vérifié", "detail": fetch_error[:230]})
         limitations.append("La page n'a pas pu être récupérée ou la connexion n'a pas pu être vérifiée.")
 
+    if fetched and urlsplit(fetched["url"]).scheme != "https" and original.scheme == "https":
+        add("Redirection non chiffrée", "Élevé", "HTTPS → HTTP",
+            "Le site passe d'une connexion HTTPS vers HTTP après redirection.")
     if len(chain) >= 2:
         domains = {urlsplit(item["url"]).hostname for item in chain}
         if len(domains) > 1 or len(chain) >= 3:
@@ -262,15 +300,18 @@ def analyze_url(url: str, mode: str = "renforce", external_consent: bool = False
                 "detail": "Requête contrôlée, sans exécuter le JavaScript ni charger des sous-ressources."}]
     if external_consent:
         try:
-            data = _rdap_domain(original.hostname)
+            data, cached = _rdap_domain_cached(original.hostname)
             checks.append({"name": "Ancienneté du domaine (RDAP)", "status": "effectué",
                            "detail": f"Enregistrement : {data['registered']} ; âge : {data['age_days']} jours."})
-            sources.append({"name": "RDAP", "status": "effectué", "detail": "Données publiques du registre, après consentement."})
+            sources.append({"name": "RDAP", "status": "effectué",
+                            "detail": "Résultat enregistré dans le cache local (moins de 24h)." if cached
+                                      else "Données publiques du registre, après consentement."})
             if 0 <= data["age_days"] < 30:
                 add("Domaine très récent", "Élevé", str(data["age_days"]) + " jours", "Domaine enregistré il y a moins de 30 jours.")
             elif 0 <= data["age_days"] < 90:
                 add("Domaine récent", "Modéré", str(data["age_days"]) + " jours", "Domaine enregistré il y a moins de 90 jours.")
         except Exception as exc:
+            security_event("RDAP_FAILED")
             checks.append({"name": "Ancienneté du domaine (RDAP)", "status": "non vérifié", "detail": str(exc)[:180]})
             sources.append({"name": "RDAP", "status": "non vérifié", "detail": "Aucune donnée exploitable."})
     else:
@@ -280,8 +321,6 @@ def analyze_url(url: str, mode: str = "renforce", external_consent: bool = False
 
     # Insufficient verification must never lead to green / Faible.
     if not fetched or fetched["status"] >= 400 or "html" not in fetched["content_type"].lower():
-        risk = "Indéterminé"
-    elif mode == "standard" and not external_consent:
         risk = "Indéterminé"
     elif any(f["severity"] == "Critique" for f in findings):
         risk = "Critique"

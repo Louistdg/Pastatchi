@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import asyncio
+import json
 import secrets
 import time
 from collections import defaultdict, deque
@@ -13,38 +14,49 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 from .analyzer import analyze_text
-from .urlscan import analyze_url, normalize_target
+from .urlscan import analyze_url, normalize_target, RDAP_CACHE
+from .security_log import security_event
 from .storage import HistoryStore
 
 ROOT = Path(__file__).resolve().parents[2]
+VERSION = json.loads((ROOT / "version.json").read_text(encoding="utf-8"))["version"]
 store = HistoryStore(ROOT / "data" / "history.sqlite3")
 TOKEN = secrets.token_urlsafe(32)
 CSP_NONCE = secrets.token_urlsafe(16)
 ACCESS_TIMES = defaultdict(deque)
 RATE_WINDOW = 60
 RATE_LIMIT = 50
-MAX_BODY = 26_000
+MAX_BODY = 100_000
 TRUSTED_HOSTS = {"localhost:8000", "127.0.0.1:8000"}
 TRUSTED_ORIGINS = {"http://127.0.0.1:8000", "http://localhost:8000"}
-app = FastAPI(title="PastaTshield", version="0.2.0", docs_url=None, redoc_url=None, openapi_url=None)
+app = FastAPI(title="PastaTshield", version=VERSION, docs_url=None, redoc_url=None, openapi_url=None)
 
 @app.middleware("http")
 async def protect(request: Request, call_next):
     if request.headers.get("host", "").lower() not in TRUSTED_HOSTS:
+        security_event("HOST_REJECTED")
         return JSONResponse({"detail": "Hôte non autorisé."}, status_code=403)
     origin = request.headers.get("origin")
     if origin and origin not in TRUSTED_ORIGINS:
+        security_event("ORIGIN_REJECTED")
         return JSONResponse({"detail": "Origine non autorisée."}, status_code=403)
     if request.url.path.startswith("/api/"):
         if not secrets.compare_digest(request.headers.get("x-pastatshield-token", ""), TOKEN):
+            security_event("TOKEN_REJECTED")
             return JSONResponse({"detail": "Accès refusé : jeton de session manquant."}, status_code=403)
         now = time.monotonic()
         key = request.client.host if request.client else "local"
         recent = ACCESS_TIMES[key]
+        # Éviction paresseuse si une future configuration autorise plusieurs IP.
+        if len(ACCESS_TIMES) > 32:
+            for previous in list(ACCESS_TIMES):
+                if previous != key and (not ACCESS_TIMES[previous] or now - ACCESS_TIMES[previous][-1] > RATE_WINDOW):
+                    del ACCESS_TIMES[previous]
         while recent and now - recent[0] > RATE_WINDOW:
             recent.popleft()
         if len(recent) >= RATE_LIMIT:
-            return JSONResponse({"detail": "Trop de requêtes. Patientez une minute."}, status_code=429)
+            security_event("RATE_LIMITED")
+            return JSONResponse({"detail": "Trop de requêtes. Patientez une minute."}, status_code=429, headers={"Retry-After": "60"})
         recent.append(now)
     if request.method in {"POST", "PUT", "PATCH"}:
         if not request.headers.get("content-type", "").lower().startswith("application/json"):
@@ -52,9 +64,15 @@ async def protect(request: Request, call_next):
         declared = request.headers.get("content-length")
         if declared is None or not declared.isdigit() or int(declared) > MAX_BODY:
             return JSONResponse({"detail": "Taille de requête invalide ou supérieure à la limite."}, status_code=413)
-        body = await request.body()
-        if len(body) > MAX_BODY:
-            return JSONResponse({"detail": "Requête trop volumineuse."}, status_code=413)
+        # La lecture est bornée, y compris si un client ignore Content-Length.
+        parts = []
+        consumed = 0
+        async for chunk in request.stream():
+            consumed += len(chunk)
+            if consumed > MAX_BODY:
+                return JSONResponse({"detail": "Requête trop volumineuse."}, status_code=413)
+            parts.append(chunk)
+        request._body = b"".join(parts)
     response = await call_next(request)
     response.headers["Cache-Control"] = "no-store"
     response.headers["X-Content-Type-Options"] = "nosniff"
@@ -78,7 +96,7 @@ class UrlRequest(BaseModel):
 
 @app.get("/api/v1/health")
 def health():
-    return {"status": "ok", "app": "PastaTshield", "version": "0.2.0"}
+    return {"status": "ok", "app": "PastaTshield", "version": VERSION}
 
 @app.post("/api/v1/analyze/text")
 async def text_analysis(payload: TextRequest):
@@ -93,8 +111,11 @@ async def text_analysis(payload: TextRequest):
 async def url_analysis(payload: UrlRequest):
     try:
         normalize_target(payload.url)
+        if payload.external_consent:
+            security_event("RDAP_CONSENTED")
         report = await asyncio.to_thread(analyze_url, payload.url, payload.mode, payload.external_consent)
     except ValueError as exc:
+        security_event("URL_REJECTED")
         raise HTTPException(status_code=422, detail=str(exc))
     item = store.add("url", report, payload.url, keep_content=payload.keep_content)
     return {"report": report, "record": item}
@@ -113,6 +134,8 @@ def history_detail(record_id: str):
 @app.delete("/api/v1/history")
 def history_clear():
     store.clear()
+    RDAP_CACHE.clear()
+    security_event("HISTORY_CLEARED")
     return {"deleted": True}
 
 DIST = ROOT / "frontend" / "dist"

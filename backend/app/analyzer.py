@@ -65,6 +65,9 @@ def analyze_text(content: str, mode: str = "renforce") -> dict:
 
     # Règles déclaratives versionnées, conservées en JSON pour audit et tests.
     for rule in RULES["rules"]:
+        # Standard : contrôles prioritaires seulement ; Renforcé/Maximum : toutes les règles.
+        if mode == "standard" and rule["id"] in {"psychology.urgency", "psychology.threat", "psychology.reward"}:
+            continue
         match = _hit(rule["pattern"], text)
         if match:
             findings.append({
@@ -78,7 +81,8 @@ def analyze_text(content: str, mode: str = "renforce") -> dict:
     for brand, official in BRANDS.items():
         if brand in lower:
             brand_found.append((brand, official))
-    for url in urls:
+    for url_match in URL_RE.finditer(text):
+        url = url_match.group(0).rstrip(".,;!?)]}")
         try:
             host = (urlsplit(url).hostname or "").lower().rstrip(".")
         except ValueError:
@@ -87,13 +91,17 @@ def analyze_text(content: str, mode: str = "renforce") -> dict:
             findings.append({"title": "Lien raccourci", "severity": "Modéré",
                              "evidence": host, "reason": "Un lien raccourci masque sa destination finale ; elle n'a pas été vérifiée ici."})
         if host in {"wa.me", "chat.whatsapp.com", "api.whatsapp.com"}:
-            context = _hit(r"(?:investissement|gagné|gain|paiement|code|vérification|colis|compte|rejoignez|groupe)", text)
+            window = text[max(0, url_match.start() - 175):min(len(text), url_match.end() + 175)]
+            context = _hit(r"(?:investissement|rendement(?: garanti)?|gain garanti|vous avez gagné|paiement|transf[ée]rez|envoyez.{0,40}code|colis bloqu[ée]|remboursement)", window)
             if context:
                 findings.append({"title": "Invitation WhatsApp à vérifier", "severity": "Élevé",
                                  "evidence": host, "reason": "Ce lien WhatsApp est accompagné d'une sollicitation sensible ou inhabituelle."})
         for brand, official_domains in brand_found:
-            if host and not any(host == d or host.endswith("." + d) for d in official_domains):
-                # Only detect brand mismatch when URL exists, never for brand mention alone.
+            slug = re.sub(r"[^a-z0-9]", "", brand.casefold().replace("ô", "o"))
+            compact_host = re.sub(r"[^a-z0-9]", "", host.casefold())
+            if (host and (slug in compact_host)
+                    and not any(host == d or host.endswith("." + d) for d in official_domains)):
+                # Seule une imitation visible dans le hostname déclenche l'alerte.
                 findings.append({"title": "Domaine différent de l'organisme cité", "severity": "Élevé",
                                  "evidence": brand + " ≠ " + host,
                                  "reason": "Le nom de domaine ne correspond pas aux domaines officiels connus pour cet organisme."})
@@ -103,12 +111,7 @@ def analyze_text(content: str, mode: str = "renforce") -> dict:
         findings.append({"title": "Multiples destinations", "severity": "Modéré",
                          "evidence": str(len(urls)) + " liens", "reason": "Plusieurs domaines différents sont présents dans le message."})
 
-    # The strict mode is more conservative for links without verifiable reputation.
-    if mode == "maximum" and urls and not findings:
-        findings.append({"title": "Destination non contrôlée", "severity": "Modéré",
-                         "evidence": str(len(urls)) + " lien(s) détecté(s)",
-                         "reason": "Le mode Maximum recommande une vérification de l'URL séparément avant de l'ouvrir."})
-
+    # Un lien non vérifié ne doit pas devenir un faux indicateur de fraude.
     risk = _risk(findings, len(text) >= 20)
     labels = {
         "Critique": "Ce message présente des signaux d'arnaque particulièrement préoccupants.",
@@ -131,10 +134,12 @@ def analyze_text(content: str, mode: str = "renforce") -> dict:
             {"name": "Motifs d'arnaque FR / BE", "status": "effectué", "detail": "Règles déclaratives v" + RULES["version"] + " (FR/BE)."},
             {"name": "Liens et domaines extraits", "status": "effectué", "detail": f"{len(urls)} lien(s) identifié(s), {len(emails)} adresse(s) e-mail."},
             {"name": "Réputation des liens", "status": "non vérifié", "detail": "Les URLs extraites ne sont pas interrogées automatiquement."},
+            *([{"name": "Prudence renforcée sur les URL", "status": "non vérifié", "detail": "Mode Maximum : analysez séparément les liens avant ouverture."}]
+              if mode == "maximum" and urls else []),
         ],
         "sources": [{"name": "Règles locales PastaTshield", "status": "effectué", "detail": "Analyse sans envoi à un service externe."}],
         "limitations": ["Les en-têtes techniques d'e-mail ne sont pas authentifiés par le texte collé.",
                         "La réputation des liens, l'identité de l'expéditeur et les données réseau ne sont pas vérifiées ici.",
                         "L'absence d'alerte ne garantit pas la sécurité."],
-        "recommendations": advice[risk], "links": urls, "collection": None,
+        "recommendations": advice[risk] + (["Vérifiez séparément les URL du message avant de les ouvrir."] if mode == "maximum" and urls else []), "links": urls, "collection": None,
     }

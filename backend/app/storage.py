@@ -4,6 +4,7 @@ from __future__ import annotations
 import json
 import sqlite3
 import uuid
+import time
 from contextlib import contextmanager
 from datetime import datetime, timezone
 from pathlib import Path
@@ -34,8 +35,10 @@ class HistoryStore:
         created_at = datetime.now(timezone.utc).isoformat(timespec="seconds")
         safe_report = {
             "kind": kind, "risk": report["risk"], "summary": report["summary"],
-            "findings": [{k: item[k] for k in ("title", "severity", "reason") if k in item}
+            "findings": [{k: item[k] for k in ("id", "version", "title", "severity", "reason") if k in item}
                          for item in report.get("findings", [])],
+            "sources": [{"name": item.get("name"), "status": item.get("status")}
+                        for item in report.get("sources", [])],
             "checks": [{"name": item.get("name"), "status": item.get("status")}
                        for item in report.get("checks", [])],
             "limitations": report.get("limitations", []),
@@ -68,3 +71,43 @@ class HistoryStore:
     def clear(self):
         with self._connect() as conn:
             conn.execute("DELETE FROM history")
+
+
+class RdapCache:
+    """Cache locale de registres publics ; entrée conservée au maximum 24 h."""
+
+    def __init__(self, path: Path):
+        self.path = Path(path)
+        self.path.parent.mkdir(parents=True, exist_ok=True)
+        with self._connect() as conn:
+            conn.execute("""CREATE TABLE IF NOT EXISTS rdap_cache (
+                domain TEXT PRIMARY KEY, registered TEXT NOT NULL,
+                expires_at INTEGER NOT NULL
+            )""")
+
+    @contextmanager
+    def _connect(self):
+        conn = sqlite3.connect(self.path, timeout=10)
+        try:
+            with conn:
+                yield conn
+        finally:
+            conn.close()
+
+    def get(self, domain: str) -> str | None:
+        with self._connect() as conn:
+            row = conn.execute("SELECT registered, expires_at FROM rdap_cache WHERE domain = ?", (domain,)).fetchone()
+            if row and row[1] > int(time.time()):
+                return row[0]
+            if row:
+                conn.execute("DELETE FROM rdap_cache WHERE domain = ?", (domain,))
+        return None
+
+    def put(self, domain: str, registered: str, ttl_seconds: int = 86400):
+        with self._connect() as conn:
+            conn.execute("INSERT OR REPLACE INTO rdap_cache VALUES (?, ?, ?)",
+                         (domain, registered, int(time.time()) + ttl_seconds))
+
+    def clear(self):
+        with self._connect() as conn:
+            conn.execute("DELETE FROM rdap_cache")

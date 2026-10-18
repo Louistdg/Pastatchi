@@ -1,12 +1,13 @@
 {
   "name": "pastatshield",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.2.1",
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "format": "prettier --write src"
   },
   "dependencies": {
     "lucide-react": "^0.468.0",
@@ -14,6 +15,8 @@
     "react-dom": "^19.0.0"
   },
   "devDependencies": {
+    "@vitejs/plugin-react": "^4.7.0",
+    "prettier": "^3.9.10",
     "vite": "^6.1.0"
   }
 }

@@ -1,0 +1,804 @@
+/*
+ * PastaTshield — Design System v1.0 (18 octobre 2026).
+ * Source de vérité visuelle : guide Dark Professional fourni par le propriétaire.
+ * Chargé APRÈS les règles historiques pour les remplacer sans régression métier.
+ * Les nouvelles fonctionnalités doivent employer ces jetons, sans nouveaux glows.
+ */
+:root {
+  --pts-bg: #050914;
+  --pts-surface-1: #0f172a;
+  --pts-surface-2: #1e293b;
+  --pts-border: #1e293b;
+  --pts-border-hover: #334155;
+  --pts-primary: #3b82f6;
+  --pts-primary-hover: #2563eb;
+  --pts-success: #10b981;
+  --pts-danger: #ef4444;
+  --pts-warning: #f59e0b;
+  --pts-heading: #f4f7fb;
+  --pts-text: #e6ecf5;
+  --pts-muted: #9aa7b8;
+  --pts-disabled: #6b7688;
+  --pts-font-body: "Inter", "Segoe UI", sans-serif;
+  --pts-font-heading: "Space Grotesk", "Inter", "Segoe UI", sans-serif;
+  --pts-font-mono: "JetBrains Mono", Consolas, monospace;
+  --pts-card-padding: 24px;
+  --pts-card-gap: 24px;
+  --pts-radius: 12px;
+  --pts-button-radius: 8px;
+  background: var(--pts-bg);
+  color: var(--pts-text);
+  font-family: var(--pts-font-body);
+  font-size: 15px;
+  line-height: 23px;
+}
+body,
+.app-shell {
+  font-family: var(--pts-font-body) !important;
+  font-size: 15px;
+  line-height: 23px;
+  background: var(--pts-bg) !important;
+  color: var(--pts-text);
+}
+.app-shell {
+  background:
+    radial-gradient(ellipse 60% 50% at 95% 8%, #0c172c 0%, transparent 90%),
+    var(--pts-bg) !important;
+}
+.app-shell * {
+  box-shadow: none !important;
+  text-shadow: none !important;
+  backdrop-filter: none !important;
+}
+.app-shell .main-cta,
+.app-shell .primary-action,
+.app-shell .analyze-top {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) !important;
+}
+.app-shell :focus-visible {
+  outline: 3px solid #93c5fd !important;
+  outline-offset: 3px;
+}
+.app-shell .space-stars {
+  opacity: 0.1 !important;
+}
+.app-shell .planet-zone {
+  opacity: 0.14 !important;
+  filter: blur(9px) !important;
+  pointer-events: none;
+  z-index: 0;
+}
+.app-shell .planet,
+.app-shell .planet-halo,
+.app-shell .orbit {
+  box-shadow: none !important;
+}
+.app-shell .planet-halo {
+  opacity: 0.15;
+}
+.app-shell .orbit {
+  opacity: 0.12;
+}
+.app-shell .glass {
+  background: var(--pts-surface-1) !important;
+  border: 1px solid var(--pts-border) !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  border-radius: var(--pts-radius) !important;
+}
+.app-shell
+  .glass:hover:not(.sidebar):not(.report-panel):not(.analyze-form):not(
+    .settings-page
+  ):not(.password-vault):not(.password-workspace) {
+  border-color: var(--pts-border-hover) !important;
+}
+h1,
+h2,
+h3,
+.app-shell h1,
+.app-shell h2,
+.app-shell h3 {
+  font-family: var(--pts-font-heading) !important;
+  color: var(--pts-heading);
+  letter-spacing: -0.025em;
+  text-transform: none;
+}
+.app-shell .hero h1 {
+  font-family: var(--pts-font-heading) !important;
+  font-size: 32px !important;
+  line-height: 38px !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.045em;
+}
+.app-shell .page-heading h1 {
+  font-size: 24px !important;
+  line-height: 30px !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.03em;
+}
+.app-shell h2,
+.app-shell .panel-heading h2 {
+  font-size: 20px !important;
+  line-height: 26px !important;
+  font-weight: 600 !important;
+}
+.app-shell h3 {
+  font-size: 16px !important;
+  line-height: 22px !important;
+  font-weight: 600 !important;
+}
+.app-shell .hero h1 span,
+.app-shell .page-heading h1 span {
+  color: var(--pts-heading) !important;
+  background: none !important;
+  -webkit-text-fill-color: var(--pts-heading) !important;
+}
+.app-shell p,
+.app-shell .hero > p,
+.app-shell .page-heading > p {
+  color: var(--pts-text);
+  font-weight: 400;
+}
+.app-shell .hero > p,
+.app-shell .page-heading > p {
+  font-size: 15px !important;
+  line-height: 23px !important;
+  max-width: 630px;
+}
+.app-shell .eyebrow,
+.app-shell .section-label,
+.app-shell .overline {
+  color: var(--pts-muted) !important;
+  font-size: 13px;
+  letter-spacing: 0.055em;
+  font-weight: 500;
+}
+.app-shell .section-right,
+.app-shell .input-helper,
+.app-shell .vault-hint,
+.app-shell .history-text small,
+.app-shell .app-footer,
+.app-shell .logo-caption {
+  color: var(--pts-muted) !important;
+}
+.app-shell .sidebar {
+  background: #080d1a !important;
+  border-right: 1px solid var(--pts-border) !important;
+}
+.app-shell .sidebar .logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 2px 8px 28px;
+  margin: 0;
+  white-space: nowrap;
+}
+.app-shell .brand-lockup {
+  color: var(--pts-heading);
+}
+.app-shell .brand-mark {
+  width: 35px;
+  height: 35px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 35px;
+  background: var(--pts-surface-1);
+  border: 1px solid var(--pts-border-hover);
+  border-radius: 9px;
+  color: #f4f7fb;
+}
+.app-shell .brand-mark svg {
+  display: block;
+}
+.app-shell .brand-wordmark {
+  font: 600 15px/23px var(--pts-font-heading);
+  color: var(--pts-heading);
+  letter-spacing: -0.025em;
+  white-space: nowrap;
+}
+.app-shell .brand-wordmark strong {
+  font-weight: 700;
+  color: #fff;
+}
+.app-shell .sidebar .nav-item {
+  color: var(--pts-muted) !important;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 18px;
+  border: 1px solid transparent !important;
+  border-radius: 8px !important;
+  min-height: 46px;
+}
+.app-shell .sidebar .nav-item svg {
+  color: var(--pts-muted);
+  filter: none !important;
+}
+.app-shell .sidebar .nav-item:hover {
+  color: var(--pts-heading) !important;
+  background: #142137 !important;
+}
+.app-shell .sidebar .nav-item.selected {
+  position: relative;
+  border-color: var(--pts-border) !important;
+  border-left: 3px solid var(--pts-primary) !important;
+  background: var(--pts-surface-1) !important;
+  color: var(--pts-heading) !important;
+}
+.app-shell .sidebar .nav-item.selected::before {
+  content: none !important;
+}
+.app-shell .sidebar .nav-item.selected svg {
+  color: var(--pts-primary) !important;
+}
+.app-shell .sidebar-status {
+  border: 1px solid var(--pts-border-hover);
+  background: var(--pts-surface-1) !important;
+  border-radius: 10px;
+}
+.app-shell .sidebar-status strong {
+  color: var(--pts-text);
+  font-weight: 600;
+}
+.app-shell .sidebar-status p {
+  color: var(--pts-muted);
+}
+.app-shell .sidebar-status .pulse-dot,
+.app-shell .module-state.ready i {
+  background: var(--pts-success) !important;
+  box-shadow: none !important;
+}
+.app-shell .mini-wave {
+  display: none;
+}
+.app-shell .sidebar-bottom {
+  margin-top: 24px;
+}
+.app-shell .sidebar-version {
+  color: var(--pts-muted);
+  font-size: 12px;
+  line-height: 17px;
+}
+.app-shell .mobile-brand {
+  display: none;
+}
+.app-shell .quick-search {
+  background: var(--pts-surface-1) !important;
+  border: 1px solid var(--pts-border) !important;
+  border-radius: 8px;
+}
+.app-shell .quick-search > button:not(.analyze-top),
+.app-shell .quick-search-static {
+  color: var(--pts-muted);
+}
+.app-shell .top-private {
+  background: #0e2c26;
+  color: #8ce0b9;
+  border-radius: 8px;
+  padding: 7px 10px;
+}
+.app-shell .main-cta,
+.app-shell .primary-action,
+.app-shell .analyze-top {
+  color: #ffffff !important;
+  background: var(--pts-primary) !important;
+  border: 1px solid var(--pts-primary) !important;
+  border-radius: var(--pts-button-radius) !important;
+  font: 500 13px/18px var(--pts-font-body);
+  min-height: 44px;
+}
+.app-shell .main-cta:hover:not(:disabled),
+.app-shell .primary-action:hover:not(:disabled),
+.app-shell .analyze-top:hover:not(:disabled) {
+  background: var(--pts-primary-hover) !important;
+  border-color: var(--pts-primary-hover) !important;
+  transform: none !important;
+}
+.app-shell .secondary-btn,
+.app-shell .outline-action,
+.app-shell .icon-button,
+.app-shell .vault-icon-btn {
+  background: var(--pts-surface-2) !important;
+  border-color: var(--pts-border-hover) !important;
+  color: var(--pts-text) !important;
+  border-radius: 8px !important;
+}
+.app-shell .secondary-btn:hover:not(:disabled),
+.app-shell .outline-action:hover:not(:disabled),
+.app-shell .icon-button:hover:not(:disabled),
+.app-shell .vault-icon-btn:hover:not(:disabled) {
+  background: #27364a !important;
+  border-color: #475569 !important;
+}
+.app-shell .violet-bullet {
+  background: var(--pts-primary) !important;
+  box-shadow: none !important;
+}
+.app-shell .modules-grid {
+  column-gap: 24px;
+  row-gap: 24px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+.app-shell .module-card,
+.app-shell .module-card.available {
+  padding: var(--pts-card-padding) !important;
+  background: var(--pts-surface-1) !important;
+  border: 1px solid var(--pts-border) !important;
+  border-radius: var(--pts-radius) !important;
+}
+.app-shell .module-card:hover:not(:disabled) {
+  border-color: var(--pts-border-hover) !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+.app-shell .module-card.upcoming {
+  background: #0b1120 !important;
+  border-color: var(--pts-border) !important;
+  opacity: 0.64;
+}
+.app-shell .module-icon,
+.app-shell .module-card .module-icon {
+  background: var(--pts-surface-2) !important;
+  border: 1px solid var(--pts-border-hover) !important;
+  border-radius: 10px;
+  color: var(--pts-text) !important;
+  box-shadow: none !important;
+}
+.app-shell .module-card strong,
+.app-shell .module-card.upcoming strong {
+  color: var(--pts-heading) !important;
+  font: 600 16px/22px var(--pts-font-heading);
+}
+.app-shell .module-card small {
+  color: var(--pts-muted) !important;
+  font: 400 13px/18px var(--pts-font-body);
+}
+.app-shell .module-state {
+  font: 500 13px/18px var(--pts-font-body);
+  color: var(--pts-success) !important;
+}
+.app-shell .module-state.soon {
+  color: var(--pts-disabled) !important;
+}
+.app-shell .module-state.soon i {
+  background: var(--pts-disabled) !important;
+}
+.app-shell .upcoming-head {
+  color: var(--pts-muted);
+}
+.app-shell .activity-panel,
+.app-shell .promise-panel,
+.app-shell .advice-card,
+.app-shell .settings-page,
+.app-shell .password-workspace,
+.app-shell .password-vault {
+  padding: var(--pts-card-padding) !important;
+}
+.app-shell .promise-panel h3,
+.app-shell .advice-card h3,
+.app-shell .vault-card-title h3 {
+  font-size: 16px !important;
+  line-height: 22px !important;
+}
+.app-shell .promise-panel li,
+.app-shell .advice-card p {
+  font-size: 15px !important;
+  line-height: 23px !important;
+  color: var(--pts-text) !important;
+}
+.app-shell .history-text strong {
+  font-size: 13px;
+}
+.app-shell .history-text small {
+  font-size: 12px;
+}
+.app-shell .empty-history {
+  color: var(--pts-muted);
+}
+.app-shell .empty-history strong {
+  color: var(--pts-text);
+}
+.app-shell .emergency-banner {
+  border: 1px solid var(--pts-border) !important;
+  background: var(--pts-surface-1) !important;
+}
+.app-shell .emergency-banner:hover {
+  background: var(--pts-surface-2) !important;
+  border-color: var(--pts-border-hover) !important;
+}
+.app-shell .emergency-banner > svg:first-child {
+  color: var(--pts-primary);
+}
+.app-shell .emergency-banner small {
+  color: var(--pts-muted);
+}
+.app-shell .analyze-form textarea,
+.app-shell .analyze-form > input,
+.app-shell .form-settings select,
+.app-shell .settings-page select,
+.app-shell .vault-label input:not([type="range"]),
+.app-shell .vault-label select,
+.app-shell .vault-secret-row input,
+.app-shell .vault-search input {
+  background: var(--pts-surface-2) !important;
+  border: 1px solid var(--pts-border-hover) !important;
+  color: var(--pts-text) !important;
+  border-radius: 8px !important;
+  font-family: var(--pts-font-body) !important;
+  font-size: 15px !important;
+  line-height: 23px !important;
+}
+.app-shell .vault-secret-row input,
+.app-shell .vault-revealed,
+.app-shell .recovery-display,
+.app-shell .collection-grid strong,
+.app-shell .finding small,
+.app-shell .evidence-line p {
+  font-family: var(--pts-font-mono) !important;
+}
+.app-shell .analyze-form textarea:focus,
+.app-shell .form-settings select:focus,
+.app-shell .vault-label input:focus,
+.app-shell .vault-secret-row input:focus {
+  border-color: var(--pts-primary) !important;
+  outline: 2px solid var(--pts-primary) !important;
+  outline-offset: 2px;
+}
+.app-shell .form-tabs button,
+.app-shell .vault-tabs button {
+  background: var(--pts-surface-1) !important;
+  border: 1px solid var(--pts-border) !important;
+  color: var(--pts-muted) !important;
+  border-radius: 8px;
+}
+.app-shell .form-tabs button.active,
+.app-shell .vault-tabs button.current {
+  background: var(--pts-surface-2) !important;
+  border-color: var(--pts-primary) !important;
+  color: var(--pts-heading) !important;
+}
+.app-shell .consent-box,
+.app-shell .report-section,
+.app-shell .collection-card,
+.app-shell .recommendation-panel,
+.app-shell .settings-info,
+.app-shell .vault-entry,
+.app-shell .vault-privacy-notice,
+.app-shell .vault-add-section {
+  background: var(--pts-surface-1) !important;
+  border-color: var(--pts-border-hover) !important;
+}
+.app-shell .consent-box input,
+.app-shell .check-label input {
+  accent-color: var(--pts-primary);
+}
+.app-shell .risk-overview.risk-hero {
+  border: 1px solid var(--pts-border-hover) !important;
+  background: var(--pts-surface-2) !important;
+  border-radius: 12px;
+}
+.app-shell .risk-overview.risk-hero.critical,
+.app-shell .risk-overview.risk-hero.high {
+  background: #28181d !important;
+  border-color: var(--pts-danger) !important;
+}
+.app-shell .risk-overview.risk-hero.medium {
+  background: #2b2418 !important;
+  border-color: var(--pts-warning) !important;
+}
+.app-shell .risk-overview.risk-hero.low {
+  background: #11281e !important;
+  border-color: var(--pts-success) !important;
+}
+.app-shell .risk-hero .risk-emblem {
+  border: 2px solid currentColor;
+  background: transparent !important;
+  color: var(--pts-text);
+}
+.app-shell .risk-hero.high .risk-emblem,
+.app-shell .risk-hero.critical .risk-emblem,
+.app-shell .risk-hero.high .verdict-label,
+.app-shell .risk-hero.critical .verdict-label {
+  color: var(--pts-danger) !important;
+}
+.app-shell .risk-hero.medium .risk-emblem,
+.app-shell .risk-hero.medium .verdict-label {
+  color: var(--pts-warning) !important;
+}
+.app-shell .risk-hero.low .risk-emblem,
+.app-shell .risk-hero.low .verdict-label {
+  color: var(--pts-success) !important;
+}
+.app-shell .risk-hero.unknown .verdict-label {
+  color: var(--pts-text) !important;
+}
+.app-shell .risk-hero .verdict-label {
+  font: 600 20px/26px var(--pts-font-heading) !important;
+  letter-spacing: 0;
+}
+.app-shell .risk-hero h3 {
+  font: 600 16px/22px var(--pts-font-heading) !important;
+}
+.app-shell .risk-hero .verdict-action {
+  color: var(--pts-text) !important;
+  font-size: 15px !important;
+  line-height: 23px !important;
+}
+.app-shell .report-view-switch {
+  background: var(--pts-surface-1);
+  border-color: var(--pts-border);
+}
+.app-shell .report-view-switch button.selected {
+  background: var(--pts-surface-2) !important;
+  border-color: var(--pts-primary) !important;
+  color: var(--pts-heading) !important;
+}
+.app-shell .health-card {
+  background: var(--pts-surface-1) !important;
+  border-color: var(--pts-border-hover) !important;
+}
+.app-shell .health-positive {
+  border-left: 3px solid var(--pts-success) !important;
+}
+.app-shell .health-attention {
+  border-left: 3px solid var(--pts-warning) !important;
+}
+.app-shell .health-positive h3 svg {
+  color: var(--pts-success);
+}
+.app-shell .health-attention h3 svg {
+  color: var(--pts-warning);
+}
+.app-shell .plain-finding strong {
+  color: var(--pts-heading);
+  font-size: 15px !important;
+}
+.app-shell .plain-finding p,
+.app-shell .health-card > p,
+.app-shell .report-caution {
+  color: var(--pts-text) !important;
+  font-size: 15px !important;
+  line-height: 23px !important;
+}
+.app-shell .recommendation-panel {
+  border-left: 3px solid var(--pts-primary) !important;
+}
+.app-shell .recommendation-panel h3 svg,
+.app-shell .settings-heading svg,
+.app-shell .vault-card-title > svg {
+  color: var(--pts-primary) !important;
+}
+.app-shell .settings-group h2 {
+  font: 600 20px/26px var(--pts-font-heading) !important;
+}
+.app-shell .strength-bars i.on.level-1 {
+  background: var(--pts-danger) !important;
+}
+.app-shell .strength-bars i.on.level-2 {
+  background: var(--pts-warning) !important;
+}
+.app-shell .strength-bars i.on.level-3 {
+  background: var(--pts-success) !important;
+}
+.app-shell .strength-1 {
+  color: var(--pts-danger) !important;
+}
+.app-shell .strength-2 {
+  color: var(--pts-warning) !important;
+}
+.app-shell .strength-3 {
+  color: var(--pts-success) !important;
+}
+.app-shell .vault-tabs button.current {
+  background: var(--pts-surface-2) !important;
+}
+.app-shell .vault-unlocked,
+.app-shell .vault-reuse-badge {
+  font-weight: 500;
+}
+.app-shell .vault-warning {
+  background: #2b2418;
+  color: #ffd6a5;
+  border-color: #765527;
+}
+.app-shell .vault-reuse-badge {
+  color: var(--pts-warning) !important;
+}
+.app-shell .vault-inline-status {
+  color: #a8efcf;
+  background: #102920 !important;
+}
+.app-shell .vault-privacy-notice {
+  color: var(--pts-muted);
+}
+.app-shell .vault-site-icon {
+  color: var(--pts-heading);
+  background: var(--pts-surface-2);
+  border-color: var(--pts-border-hover);
+}
+.app-shell .history-row:hover {
+  background: var(--pts-surface-2) !important;
+}
+.app-shell .history-ico {
+  border-radius: 8px;
+  color: var(--pts-text);
+  background: var(--pts-surface-2) !important;
+}
+.app-shell .risk-pill.low,
+.app-shell .finding-severity.low {
+  color: var(--pts-success) !important;
+}
+.app-shell .risk-pill.medium,
+.app-shell .finding-severity.medium {
+  color: var(--pts-warning) !important;
+}
+.app-shell .risk-pill.high,
+.app-shell .risk-pill.critical,
+.app-shell .finding-severity.high,
+.app-shell .finding-severity.critical {
+  color: var(--pts-danger) !important;
+}
+.app-shell .modal-backdrop {
+  background: #050914e9;
+}
+.app-shell .incident-grid button.active {
+  border-color: var(--pts-primary);
+  background: var(--pts-surface-2);
+}
+@media (max-width: 1280px) {
+  .app-shell .modules-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+  }
+}
+@media (max-width: 900px) {
+  .app-shell .planet-zone {
+    opacity: 0.1 !important;
+  }
+  .app-shell .modules-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+  }
+}
+@media (max-width: 700px) {
+  .app-shell .modules-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+  .app-shell .sidebar {
+    background: #080d1a !important;
+  }
+  .app-shell .topbar {
+    gap: 8px;
+  }
+  .app-shell .mobile-brand {
+    display: grid;
+    place-items: center;
+    flex: 0 0 35px;
+    width: 35px;
+    height: 35px;
+    color: var(--pts-heading);
+    background: var(--pts-surface-1);
+    border: 1px solid var(--pts-border-hover);
+    border-radius: 8px;
+    order: 2;
+  }
+  .app-shell .quick-search {
+    flex: 1;
+    min-width: 0;
+    order: 1;
+  }
+  .app-shell .planet-zone {
+    opacity: 0.08 !important;
+  }
+  .app-shell .hero h1 {
+    font-size: 30px !important;
+    line-height: 36px !important;
+  }
+  .app-shell .page-heading h1 {
+    font-size: 24px !important;
+    line-height: 30px !important;
+  }
+  .app-shell .activity-panel,
+  .app-shell .promise-panel,
+  .app-shell .advice-card,
+  .app-shell .settings-page,
+  .app-shell .password-workspace,
+  .app-shell .password-vault {
+    padding: 18px !important;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .app-shell *,
+  .app-shell *::before,
+  .app-shell *::after {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+/* Copie des secrets : compte à rebours visible (tentative, pas garantie d'effacement). */
+.app-shell .clipboard-countdown {
+  display: flex;
+  align-items: center;
+  gap: 19px;
+  max-width: 870px;
+  margin: -5px 0 24px;
+  padding: 18px 22px;
+  background: var(--pts-surface-1);
+  border: 1px solid var(--pts-border-hover);
+  border-left: 3px solid var(--pts-primary);
+  border-radius: var(--pts-radius);
+}
+.app-shell .clipboard-timer-ring {
+  display: block;
+  flex: 0 0 76px;
+  overflow: visible;
+}
+.app-shell .clipboard-timer-track,
+.app-shell .clipboard-timer-progress {
+  fill: none;
+  stroke-width: 6;
+  transform: rotate(-90deg);
+  transform-origin: 38px 38px;
+}
+.app-shell .clipboard-timer-track {
+  stroke: var(--pts-surface-2);
+}
+.app-shell .clipboard-timer-progress {
+  stroke: var(--pts-primary);
+  stroke-linecap: round;
+  transition: stroke-dashoffset 500ms linear;
+}
+.app-shell .clipboard-timer-number {
+  fill: var(--pts-heading);
+  font: 600 15px/1 var(--pts-font-heading);
+}
+.app-shell .clipboard-countdown strong {
+  display: block;
+  font: 600 16px/22px var(--pts-font-heading);
+  color: var(--pts-heading);
+  margin-bottom: 4px;
+}
+.app-shell .clipboard-countdown p {
+  font-size: 15px;
+  line-height: 23px;
+  color: var(--pts-text);
+  margin: 0;
+}
+.app-shell .clipboard-countdown small {
+  font-size: 12px;
+  line-height: 17px;
+  color: var(--pts-muted);
+}
+.app-shell .vault-site-icon {
+  border-radius: 50%;
+}
+@media (max-width: 600px) {
+  .app-shell .clipboard-countdown {
+    padding: 14px;
+    gap: 12px;
+  }
+  .app-shell .clipboard-timer-ring {
+    width: 63px;
+    height: 63px;
+    flex-basis: 63px;
+  }
+}
+
+/* Monogramme mobile et suppression des derniers halos hérités des icônes. */
+.app-shell svg,
+.app-shell .feature-symbol,
+.app-shell .module-icon {
+  filter: none !important;
+}
+.app-shell .hero-mobile-name {
+  display: none;
+}
+@media (max-width: 700px) {
+  .app-shell .hero-mobile-name {
+    display: block;
+    margin-bottom: 9px;
+    color: var(--pts-heading);
+    font: 600 16px/22px var(--pts-font-heading);
+  }
+}

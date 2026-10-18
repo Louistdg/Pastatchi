@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <title>PastaTshield — T-Bouclier</title>
+  <rect width="64" height="64" rx="15" fill="#0F172A"/>
+  <path d="M15.5 13.5H48.5V25C48.5 37.7 42 46.8 32 50.6 22 46.8 15.5 37.7 15.5 25V13.5Z"
+        fill="none" stroke="#F4F7FB" stroke-width="3.3" stroke-linejoin="round"/>
+  <path d="M21 20H43M32 20V40.5" fill="none" stroke="#F4F7FB" stroke-width="5.3" stroke-linecap="round"/>
+</svg>

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import PRODUCT from "../../version.json";
 import PasswordManager from "./PasswordManager.jsx";
+import TShieldIcon from "./TShieldIcon.jsx";
 const VERSION = PRODUCT.version;
 import {
   Activity,
@@ -180,14 +181,13 @@ const api = async (path, opts = {}) => {
 };
 function Logo() {
   return (
-    <div className="logo">
-      <div className="logo-mark">P</div>
-      <div>
-        <div className="logo-name">
-          PastaT<span>shield</span>
-        </div>
-        <div className="logo-caption">CYBERSECURITY • FR / BE</div>
-      </div>
+    <div className="logo brand-lockup" aria-label="PastaTshield">
+      <span className="brand-mark" aria-hidden="true">
+        <TShieldIcon size={28} />
+      </span>
+      <span className="brand-wordmark">
+        Pasta<strong>T</strong>shield
+      </span>
     </div>
   );
 }
@@ -854,6 +854,9 @@ function App() {
       </aside>
       <main className="main-area">
         <header className="topbar">
+          <span className="mobile-brand" aria-label="PastaTshield">
+            <TShieldIcon size={25} />
+          </span>
           {page === "analyze" ? (
             <div className="quick-search quick-search-static">
               <LockKeyhole size={18} />
@@ -879,6 +882,7 @@ function App() {
         {page === "home" && (
           <div className="page-body">
             <div className="hero">
+              <span className="hero-mobile-name">PastaTshield</span>
               <div className="eyebrow">
                 <span className="violet-bullet" /> VOTRE CONSEILLER ANTI-ARNAQUE
               </div>

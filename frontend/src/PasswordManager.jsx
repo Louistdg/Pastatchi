@@ -33,6 +33,57 @@ import {
   isReused,
 } from "./passwordCrypto.js";
 
+let clipboardClearHandle = null;
+
+function ClipboardCountdown({ remaining }) {
+  const radius = 22;
+  const circumference = 2 * Math.PI * radius;
+  return (
+    <aside className="clipboard-countdown" role="status" aria-live="off">
+      <svg
+        className="clipboard-timer-ring"
+        width="76"
+        height="76"
+        viewBox="0 0 76 76"
+        role="progressbar"
+        aria-label="Temps avant la tentative d'effacement du presse-papiers"
+        aria-valuemin={0}
+        aria-valuemax={60}
+        aria-valuenow={remaining}
+      >
+        <circle cx="38" cy="38" r={radius} className="clipboard-timer-track" />
+        <circle
+          cx="38"
+          cy="38"
+          r={radius}
+          className="clipboard-timer-progress"
+          strokeDasharray={circumference}
+          strokeDashoffset={circumference * (1 - remaining / 60)}
+        />
+        <text
+          x="38"
+          y="44"
+          textAnchor="middle"
+          className="clipboard-timer-number"
+        >
+          {remaining}s
+        </text>
+      </svg>
+      <div>
+        <strong>Mot de passe copié</strong>
+        <p>
+          Tentative d'effacement du presse-papiers dans {remaining} seconde
+          {remaining > 1 ? "s" : ""}.
+        </p>
+        <small>
+          Le navigateur et l'historique du système peuvent empêcher son
+          effacement.
+        </small>
+      </div>
+    </aside>
+  );
+}
+
 const MASTER_NOTICE =
   "La phrase maître n'est jamais envoyée au serveur. Sans phrase maître ni clé de secours, le coffre ne pourra pas être récupéré.";
 
@@ -258,6 +309,8 @@ export default function PasswordManager({ api }) {
     [backupConfirmed, setBackupConfirmed] = useState(false);
   const [recovered, setRecovered] = useState(false);
   const [changingMaster, setChangingMaster] = useState(false);
+  const [clipboardExpiresAt, setClipboardExpiresAt] = useState(0);
+  const [clipboardRemaining, setClipboardRemaining] = useState(0);
   const [siteName, setSiteName] = useState(""),
     [siteUrl, setSiteUrl] = useState("");
   const [username, setUsername] = useState(""),
@@ -348,15 +401,35 @@ export default function PasswordManager({ api }) {
     return () => clearTimeout(timer);
   }, [revealed]);
 
+  useEffect(() => {
+    if (!clipboardExpiresAt) return undefined;
+    const tick = () =>
+      setClipboardRemaining(
+        Math.max(0, Math.ceil((clipboardExpiresAt - Date.now()) / 1000)),
+      );
+    tick();
+    const interval = setInterval(tick, 1000);
+    return () => clearInterval(interval);
+  }, [clipboardExpiresAt]);
+
   const copySecret = async (text) => {
     await navigator.clipboard.writeText(text);
-    // Best effort: ne pas effacer un presse-papiers que l'utilisateur a modifié entre-temps.
-    setTimeout(async () => {
+    if (clipboardClearHandle !== null) clearTimeout(clipboardClearHandle);
+    const expiry = Date.now() + 60000;
+    setClipboardExpiresAt(expiry);
+    setClipboardRemaining(60);
+    // Best effort : uniquement si le contenu actuel est exactement celui copié,
+    // et si le navigateur autorise la lecture du presse-papiers.
+    // Timer module-scope : il continue même si la page « Mots de passe » est quittée.
+    clipboardClearHandle = setTimeout(async () => {
       try {
-        if ((await navigator.clipboard.readText()) === text)
+        if ((await navigator.clipboard.readText()) === text) {
           await navigator.clipboard.writeText("");
+        }
       } catch {
-        /* navigateur ou onglet non autorisé : aucune garantie */
+        /* permission refusée ou onglet fermé : effacement non garanti */
+      } finally {
+        clipboardClearHandle = null;
       }
     }, 60000);
   };
@@ -605,6 +678,9 @@ export default function PasswordManager({ api }) {
           chiffré, à la demande. Aucune synchronisation cloud.
         </p>
       </div>
+      {clipboardRemaining > 0 && (
+        <ClipboardCountdown remaining={clipboardRemaining} />
+      )}
       <div className="password-layout">
         <section className="glass password-workspace">
           <PasswordGenerator
@@ -847,7 +923,9 @@ export default function PasswordManager({ api }) {
               </div>
               <p>
                 Gardez-la sur papier ou dans un endroit sûr, séparé de cet
-                appareil. Elle ne sera plus affichée après activation. La clé de secours ne remplace pas une sauvegarde du coffre chiffré en cas de panne de l'ordinateur.
+                appareil. Elle ne sera plus affichée après activation. La clé de
+                secours ne remplace pas une sauvegarde du coffre chiffré en cas
+                de panne de l'ordinateur.
               </p>
               <div className="recovery-display">{pending.rescue}</div>
               <button

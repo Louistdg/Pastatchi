@@ -72,7 +72,7 @@ Depuis la racine du dépôt (environnement de développement) :
 - `data/` — historique SQLite, cache RDAP et journal local sans données personnelles, ignorés par Git
 - `version.json` — version produit unique (backend et frontend)
 
-**Guide de style officiel :** [`PastaTshield_Guide_Style_v1.0.md`](PastaTshield_Guide_Style_v1.0.md). Logo T-Bouclier, palette sémantique et typographie locale : `frontend/src/design-system.css`.
+**Guide de style officiel :** [`PastaTshield_Guide_Style_v1.1.md`](PastaTshield_Guide_Style_v1.1.md). Logo T-Bouclier, palette sémantique et typographie locale : `frontend/src/design-system.css`.
 
 Voir `PastaTshield_Architecture_V0.3.md` pour les décisions, écarts à la proposition initiale, limites et évolutions. L'architecture 0.2.1 reste conservée à titre historique.
 

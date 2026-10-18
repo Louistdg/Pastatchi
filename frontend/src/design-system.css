@@ -1,5 +1,5 @@
 /*
- * PastaTshield — Design System v1.0 (18 octobre 2026).
+ * PastaTshield — Design System v1.1 (18 octobre 2026) : lisibilité et contrastes.
  * Source de vérité visuelle : guide Dark Professional fourni par le propriétaire.
  * Chargé APRÈS les règles historiques pour les remplacer sans régression métier.
  * Les nouvelles fonctionnalités doivent employer ces jetons, sans nouveaux glows.
@@ -10,17 +10,17 @@
   --pts-surface-2: #1e293b;
   --pts-border: #1e293b;
   --pts-border-hover: #334155;
-  --pts-primary: #3b82f6;
-  --pts-primary-hover: #2563eb;
+  --pts-primary: #2563eb;
+  --pts-primary-hover: #1d4ed8;
   --pts-success: #10b981;
   --pts-danger: #ef4444;
   --pts-warning: #f59e0b;
   --pts-heading: #f4f7fb;
   --pts-text: #e6ecf5;
-  --pts-muted: #9aa7b8;
-  --pts-disabled: #6b7688;
-  --pts-font-body: "Inter", "Segoe UI", sans-serif;
-  --pts-font-heading: "Space Grotesk", "Inter", "Segoe UI", sans-serif;
+  --pts-muted: #b7c4d6;
+  --pts-disabled: #9aa9bd;
+  --pts-font-body: "Atkinson Hyperlegible Next", "Segoe UI", sans-serif;
+  --pts-font-heading: "Atkinson Hyperlegible Next", "Segoe UI", sans-serif;
   --pts-font-mono: "JetBrains Mono", Consolas, monospace;
   --pts-card-padding: 24px;
   --pts-card-gap: 24px;
@@ -29,14 +29,14 @@
   background: var(--pts-bg);
   color: var(--pts-text);
   font-family: var(--pts-font-body);
-  font-size: 15px;
-  line-height: 23px;
+  font-size: 17px;
+  line-height: 27px;
 }
 body,
 .app-shell {
   font-family: var(--pts-font-body) !important;
-  font-size: 15px;
-  line-height: 23px;
+  font-size: 17px;
+  line-height: 27px;
   background: var(--pts-bg) !important;
   color: var(--pts-text);
 }
@@ -141,8 +141,8 @@ h3,
 }
 .app-shell .hero > p,
 .app-shell .page-heading > p {
-  font-size: 15px !important;
-  line-height: 23px !important;
+  font-size: 18px !important;
+  line-height: 29px !important;
   max-width: 630px;
 }
 .app-shell .eyebrow,
@@ -191,7 +191,10 @@ h3,
   display: block;
 }
 .app-shell .brand-wordmark {
-  font: 600 15px/23px var(--pts-font-heading);
+  font:
+    600 17px/24px "Space Grotesk",
+    "Segoe UI",
+    sans-serif;
   color: var(--pts-heading);
   letter-spacing: -0.025em;
   white-space: nowrap;
@@ -283,7 +286,7 @@ h3,
   background: var(--pts-primary) !important;
   border: 1px solid var(--pts-primary) !important;
   border-radius: var(--pts-button-radius) !important;
-  font: 500 13px/18px var(--pts-font-body);
+  font: 600 16px/24px var(--pts-font-body);
   min-height: 44px;
 }
 .app-shell .main-cta:hover:not(:disabled),
@@ -350,10 +353,10 @@ h3,
 }
 .app-shell .module-card small {
   color: var(--pts-muted) !important;
-  font: 400 13px/18px var(--pts-font-body);
+  font: 400 15px/23px var(--pts-font-body);
 }
 .app-shell .module-state {
-  font: 500 13px/18px var(--pts-font-body);
+  font: 600 16px/24px var(--pts-font-body);
   color: var(--pts-success) !important;
 }
 .app-shell .module-state.soon {
@@ -800,5 +803,219 @@ h3,
     margin-bottom: 9px;
     color: var(--pts-heading);
     font: 600 16px/22px var(--pts-font-heading);
+  }
+}
+
+/* Contrastes et lecture seniors — Atkinson Hyperlegible Next (OFL).
+ * Blanc sur bleu primaire #2563eb : contraste AA pour texte normal.
+ * Revue WCAG complète restant à mener ; ce sont des améliorations ciblées. */
+.app-shell h1,
+.app-shell h2,
+.app-shell h3 {
+  letter-spacing: 0 !important;
+}
+.app-shell .hero h1 {
+  font-size: 36px !important;
+  line-height: 44px !important;
+  letter-spacing: 0 !important;
+}
+.app-shell .page-heading h1 {
+  font-size: 30px !important;
+  line-height: 38px !important;
+  letter-spacing: 0 !important;
+}
+.app-shell h2,
+.app-shell .panel-heading h2,
+.app-shell .settings-group h2 {
+  font-size: 24px !important;
+  line-height: 32px !important;
+}
+.app-shell h3,
+.app-shell .promise-panel h3,
+.app-shell .advice-card h3,
+.app-shell .vault-card-title h3 {
+  font-size: 19px !important;
+  line-height: 27px !important;
+}
+.app-shell .brand-wordmark {
+  letter-spacing: 0;
+}
+.app-shell .sidebar {
+  flex-basis: 262px;
+}
+.app-shell .sidebar .nav-item {
+  font-size: 16px !important;
+  line-height: 24px !important;
+  min-height: 48px;
+  padding-block: 12px;
+}
+.app-shell .sidebar-status strong,
+.app-shell .top-private,
+.app-shell .quick-search > button:not(.analyze-top),
+.app-shell .quick-search-static {
+  font-size: 16px !important;
+  line-height: 24px !important;
+}
+.app-shell .sidebar-status p {
+  font-size: 16px !important;
+  line-height: 25px !important;
+}
+.app-shell .sidebar-version,
+.app-shell .app-footer,
+.app-shell .settings-version,
+.app-shell .history-text small {
+  font-size: 14px !important;
+  line-height: 21px !important;
+  letter-spacing: 0 !important;
+}
+.app-shell .eyebrow,
+.app-shell .section-label,
+.app-shell .overline,
+.app-shell .upcoming-head,
+.app-shell .section-right {
+  font-size: 15px !important;
+  line-height: 22px !important;
+  letter-spacing: 0.03em !important;
+}
+.app-shell .module-card strong,
+.app-shell .module-card.upcoming strong {
+  font: 600 18px/24px var(--pts-font-heading) !important;
+}
+.app-shell .module-card small,
+.app-shell .module-state {
+  font-size: 15px !important;
+  line-height: 23px !important;
+}
+.app-shell .module-card.upcoming {
+  opacity: 1 !important;
+}
+.app-shell .module-card.upcoming strong,
+.app-shell .module-card.upcoming small,
+.app-shell .module-state.soon {
+  color: var(--pts-muted) !important;
+}
+.app-shell .promise-panel li,
+.app-shell .advice-card p,
+.app-shell .empty-history,
+.app-shell .history-text strong {
+  font-size: 17px !important;
+  line-height: 27px !important;
+}
+.app-shell .form-tabs button,
+.app-shell .vault-tabs button,
+.app-shell .secondary-btn,
+.app-shell .outline-action,
+.app-shell .report-view-switch button {
+  font: 600 16px/24px var(--pts-font-body) !important;
+}
+.app-shell label,
+.app-shell .small-label,
+.app-shell .vault-label,
+.app-shell .form-settings label,
+.app-shell .check-label,
+.app-shell .input-helper {
+  font-family: var(--pts-font-body);
+  font-size: 16px !important;
+  line-height: 25px !important;
+}
+.app-shell .analyze-form textarea,
+.app-shell .analyze-form input,
+.app-shell .form-settings select,
+.app-shell .settings-page select,
+.app-shell .vault-label input:not([type="range"]),
+.app-shell .vault-label select,
+.app-shell .vault-secret-row input,
+.app-shell .vault-search input {
+  font-size: 17px !important;
+  line-height: 27px !important;
+}
+.app-shell .vault-secret-row input,
+.app-shell .vault-revealed,
+.app-shell .recovery-display {
+  font-size: 16px !important;
+  line-height: 25px !important;
+}
+.app-shell .vault-hint,
+.app-shell .vault-privacy-notice,
+.app-shell .vault-empty p,
+.app-shell .vault-card-title p,
+.app-shell .vault-warning,
+.app-shell .vault-inline-status,
+.app-shell .vault-error {
+  font-size: 16px !important;
+  line-height: 25px !important;
+}
+.app-shell .vault-entry-main strong {
+  font-size: 17px !important;
+  line-height: 24px !important;
+}
+.app-shell .vault-entry-main > span,
+.app-shell .vault-entry-main > small,
+.app-shell .vault-reuse-badge {
+  font-size: 15px !important;
+  line-height: 23px !important;
+}
+.app-shell .risk-hero .verdict-label {
+  font-size: 24px !important;
+  line-height: 32px !important;
+}
+.app-shell .risk-hero h3 {
+  font-size: 19px !important;
+  line-height: 27px !important;
+}
+.app-shell .risk-hero .verdict-action,
+.app-shell .health-card p,
+.app-shell .plain-finding strong,
+.app-shell .plain-finding p,
+.app-shell .report-caution,
+.app-shell .recommendation-panel,
+.app-shell .finding p,
+.app-shell .report-section p,
+.app-shell .evidence-line p {
+  font-size: 17px !important;
+  line-height: 27px !important;
+}
+.app-shell .health-card h3,
+.app-shell .recommendation-panel h3 {
+  font-size: 21px !important;
+  line-height: 29px !important;
+}
+.app-shell .clipboard-timer-number {
+  font-size: 18px !important;
+}
+.app-shell .clipboard-countdown p,
+.app-shell .clipboard-countdown small {
+  font-size: 16px !important;
+  line-height: 25px !important;
+}
+.app-shell .main-cta,
+.app-shell .primary-action,
+.app-shell .analyze-top {
+  font-size: 16px !important;
+  line-height: 24px !important;
+  min-height: 48px;
+}
+@media (max-width: 900px) {
+  .app-shell .modules-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 700px) {
+  .app-shell .hero h1 {
+    font-size: 32px !important;
+    line-height: 40px !important;
+  }
+  .app-shell .page-heading h1 {
+    font-size: 27px !important;
+    line-height: 36px !important;
+  }
+  .app-shell .module-card,
+  .app-shell .module-card.available {
+    padding: 18px 13px !important;
+  }
+  .app-shell .module-card strong,
+  .app-shell .module-card.upcoming strong {
+    font-size: 17px !important;
+    line-height: 24px !important;
   }
 }

@@ -130,3 +130,19 @@ test("rapport faible : ne suggère pas une réputation externe vérifiée", () =
   assert.match(messages[0], /Cela ne prouve pas que ce contenu est sans danger/);
   assert.doesNotMatch(messages[0], /AUCUN SIGNALEMENT CONNU DÉTECTÉ/);
 });
+
+test("icônes de statut et focus : contraste non textuel WCAG d'au moins 3:1 sur les surfaces", () => {
+  const surfaces = [cssToken("--pts-surface-1"), cssToken("--pts-surface-2")];
+  const iconColors = [
+    cssToken("--pts-success"),
+    cssToken("--pts-danger"),
+    cssToken("--pts-warning"),
+    "#60a5fa", // contour focus
+  ];
+  for (const surface of surfaces) {
+    for (const color of iconColors) {
+      assert.ok(contrast(color, surface) >= 3,
+        "Contraste d'icône/focus insuffisant (" + color + " sur " + surface + ")");
+    }
+  }
+});

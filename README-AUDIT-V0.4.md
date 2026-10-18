@@ -4,6 +4,7 @@
 **Statut :** application **alpha locale** (FastAPI + React, exécutée sur `127.0.0.1`).
 **Révision auditée :** le commit indiqué dans le nom du ZIP livré. Cette archive est **un objet à auditer, pas un logiciel certifié**.
 **Pour le modèle de menaces initial :** [THREAT_MODEL.md](THREAT_MODEL.md).
+**Pour la couverture des tests, leurs preuves et les scénarios encore manquants :** [docs/audit/QA_MATRIX_V0.4.md](docs/audit/QA_MATRIX_V0.4.md).
 **Pour le périmètre d'origine V0.3 :** [README-AUDIT.md](README-AUDIT.md) (figé, référence historique, **pas** un état V0.4).
 
 ## 1. Contenu du ZIP
@@ -42,16 +43,19 @@ Les modifications de V0.4 sont **non auditées indépendamment**. Le fait que le
 
 | Contrôle | Résultat |
 | --- | --- |
-| Backend : `unittest discover -s backend/tests -q` | **70 tests réussis** |
+| Backend : `unittest discover -s backend/tests -q` | **100 tests réussis** |
+| Matrice sécurité API/règles/URL/coffre : `test_audit_matrix.py` (inclus ci-dessus) | **30 tests réussis** |
 | Régression HTML : `test_html_corpus.py` (incluse ci-dessus) | **7 tests réussis** |
 | Lint Python ciblé `ruff --select E4,E7,E9,F` | **Réussi** |
 | `npm run build` | **Réussi** |
 | `npm run test:directory` | **5 réussis** |
-| `npm run test:style` | **9 réussis** |
+| `npm run test:style` | **10 réussis** |
 | `npm run test:crypto` | **6 réussis** |
+| `npm run test:security` | **5 réussis** |
+| `npm run test:all` (ensemble frontend, sans double comptage) | **26 tests réussis** |
 | `npm audit --omit=dev --audit-level=high` | **0 vulnérabilité connue signalée** au moment du contrôle |
 
-**Note :** les 7 tests HTML sont **compris dans les 70 tests backend**, et ne doivent pas être additionnés une seconde fois. Le lint, le build et les tests unitaires/intégration **ne remplacent pas** un audit indépendant, une évaluation statistique de détection ni un test de pénétration.
+**Note :** les 7 tests HTML et les 30 tests de la matrice sont **compris dans les 100 tests backend** ; les 5 nouveaux tests cryptographiques sont **compris dans les 26 tests frontend**. Ne pas additionner deux fois. Le lint, le build et les tests unitaires/intégration **ne remplacent pas** un audit indépendant, une évaluation statistique de détection ni un test de pénétration.
 
 ## 5. Commandes pour reproduction sur Windows
 
@@ -63,9 +67,7 @@ Avec Python 3.14, Node 24 et npm, depuis le ZIP décompressé et **sans aucune b
 cd frontend
 npm ci
 npm run build
-npm run test:directory
-npm run test:style
-npm run test:crypto
+npm run test:all
 npm audit --omit=dev --audit-level=high
 cd ..
 

@@ -61,9 +61,7 @@ Depuis la racine du dépôt (sur une installation de développement). **Compiler
 cd frontend
 npm ci
 npm run build
-npm run test:crypto
-npm run test:style
-npm run test:directory
+npm run test:all
 cd ..
 
 py -3.14 -m venv backend\.venv
@@ -71,7 +69,7 @@ py -3.14 -m venv backend\.venv
 .\backend\.venv\Scripts\python.exe -m unittest discover -s backend\tests -q
 ```
 
-Pour les consignes complètes de l'auditeur, voir [README-AUDIT-V0.4.md](README-AUDIT-V0.4.md).
+Pour les consignes complètes de l'auditeur, voir [README-AUDIT-V0.4.md](README-AUDIT-V0.4.md). La [matrice QA de couverture et ses limites](docs/audit/QA_MATRIX_V0.4.md) récapitule les tests automatisés et les contrôles encore manuels.
 
 ## Répertoire
 

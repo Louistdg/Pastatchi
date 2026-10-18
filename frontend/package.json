@@ -10,7 +10,9 @@
     "format": "prettier --write src",
     "test:crypto": "node --test tests/crypto.test.mjs",
     "test:style": "node --test tests/style.test.mjs",
-    "test:directory": "node --test tests/officialSites.test.mjs"
+    "test:directory": "node --test tests/officialSites.test.mjs",
+    "test:security": "node --test tests/securityMatrix.test.mjs",
+    "test:all": "node --test tests/*.test.mjs"
   },
   "dependencies": {
     "@fontsource/jetbrains-mono": "^5.3.0",

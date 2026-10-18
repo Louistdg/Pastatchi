@@ -16,6 +16,13 @@
 - [ ] Faire tester la recherche avec des seniors, y compris les fautes d'orthographe, l'annonce des suggestions et la visibilité des avertissements.
 - [ ] Mettre en place une revue de sécurité différentielle du répertoire V0.4 : validation des sources, comportements des liens, UI/XSS et URL présentées.
 
+## Couverture des tests et traçabilité (avant la bêta)
+
+- [ ] **Harmoniser la traçabilité des constats heuristiques** du moteur de messages (`analyzer.py`) : `id` et `version` manquent pour certains liens raccourcis, invitations WhatsApp et domaines imités. Ne pas déclarer tous les constats versionnés avant correction.
+- [ ] **Tests d'attaque bout en bout du transport** : DNS rebinding/TOCTOU dans un labo isolé, IP épinglée et SNI, réponses HTTP hostiles, protection locale depuis une page Web tierce.
+- [ ] **Parcours E2E Playwright sur base jetable** : analyse, historique, coffre et presse-papiers, clavier, zoom et lecteurs d'écran. Ne jamais effacer les données réelles pendant des tests.
+- [ ] **Valider et étendre la matrice QA** `docs/audit/QA_MATRIX_V0.4.md` : documenter les écarts, leur gravité et les retests.
+
 ## Priorités de sécurité inchangées avant diffusion publique
 
 - [ ] Faire réaliser l'audit indépendant du frontend (XSS/CSP/secret en mémoire), de l'API locale et des vérifications URL/SSRF.

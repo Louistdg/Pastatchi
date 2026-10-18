@@ -224,6 +224,7 @@ function Report({ report, record, onBack }) {
   const connectionCheck = checks.find((c) => c.name === "Connexion au site");
   const ageCheck = checks.find((c) => c.name?.includes("RDAP"));
   const pageInspected = pageCheck?.status === "effectué";
+  const pagePartiallyInspected = pageCheck?.status === "partiel";
   const connectionVerified = connectionCheck?.status === "effectué";
   const lastDestination = report.redirects?.at(-1)?.url || "";
   const friendlyTitles = {
@@ -419,43 +420,62 @@ function Report({ report, record, onBack }) {
               <h3>
                 <AlertTriangle size={22} /> Ce qu’il faut savoir
               </h3>
+              {isUrl && pagePartiallyInspected && (
+                <div className="plain-finding">
+                  <strong>
+                    Analyse partielle : une partie seulement de la page a été
+                    examinée
+                  </strong>
+                  <p>
+                    La page est trop volumineuse pour être inspectée en entier.
+                    Les éléments repérés sont réels, mais d’autres formulaires
+                    ou risques peuvent se trouver plus loin dans la page. Une
+                    absence d’alerte dans la partie reçue ne garantit rien.
+                  </p>
+                </div>
+              )}
               {findings.map((f, i) => (
                 <div className="plain-finding" key={i}>
                   <strong>{friendlyTitles[f.title] || f.title}</strong>
                   <p>{f.reason}</p>
                 </div>
               ))}
-              {isUrl && privacy && pageInspected && (
-                <>
-                  <div className="plain-finding">
-                    <strong>Outils de suivi</strong>
-                    <p>
-                      {(privacy.known_trackers || []).length
-                        ? privacy.known_trackers.length +
-                          " service(s) de suivi référencé(s) dans la page. Leur fonctionnement réel n’a pas été vérifié."
-                        : "Aucun outil de suivi connu n’a été identifié parmi les ressources référencées."}
-                    </p>
-                  </div>
-                  <div className="plain-finding">
-                    <strong>Cookies et services extérieurs</strong>
-                    <p>
-                      La réponse reçue a déclaré {privacy.observed_cookies || 0}{" "}
-                      cookie(s). {privacy.third_party_domains?.length || 0}{" "}
-                      domaine(s) extérieur(s) ont été référencés dans le code
-                      public.
-                    </p>
-                  </div>
-                  {privacy.data_requested?.length > 0 && (
+              {isUrl &&
+                privacy &&
+                (pageInspected || pagePartiallyInspected) && (
+                  <>
                     <div className="plain-finding">
-                      <strong>Informations demandées sur cette page</strong>
+                      <strong>Outils de suivi</strong>
                       <p>
-                        {privacy.data_requested.join(", ")}. Leur transmission
-                        n’a pas été observée.
+                        {(privacy.known_trackers || []).length
+                          ? privacy.known_trackers.length +
+                            " service(s) de suivi référencé(s) dans la page. Leur fonctionnement réel n’a pas été vérifié."
+                          : pagePartiallyInspected
+                            ? "Aucun outil de suivi connu repéré dans le début de page examiné. Le reste n’a pas été vérifié."
+                            : "Aucun outil de suivi connu n’a été identifié parmi les ressources référencées."}
                       </p>
                     </div>
-                  )}
-                </>
-              )}
+                    <div className="plain-finding">
+                      <strong>Cookies et services extérieurs</strong>
+                      <p>
+                        La réponse reçue a déclaré{" "}
+                        {privacy.observed_cookies || 0} cookie(s).{" "}
+                        {privacy.third_party_domains?.length || 0} domaine(s)
+                        extérieur(s) ont été référencés dans le code public
+                        {pagePartiallyInspected ? " dans la partie reçue" : ""}.
+                      </p>
+                    </div>
+                    {privacy.data_requested?.length > 0 && (
+                      <div className="plain-finding">
+                        <strong>Informations demandées sur cette page</strong>
+                        <p>
+                          {privacy.data_requested.join(", ")}. Leur transmission
+                          n’a pas été observée.
+                        </p>
+                      </div>
+                    )}
+                  </>
+                )}
               {isUrl && (
                 <div className="plain-finding">
                   <strong>Âge du site</strong>

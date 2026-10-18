@@ -15,10 +15,10 @@ from .security_log import security_event
 from html.parser import HTMLParser
 from urllib.parse import urljoin, urlsplit, urlunsplit
 
-MAX_BYTES = 420_000
+MAX_BYTES = 1_000_000  # Plafond strict de téléchargement : 1 Mo + 1 octet sentinelle.
 MAX_REDIRECTS = 3
 TIMEOUT = 5
-USER_AGENT = "PastaTshield/0.1 (+local-requested-passive-inspection)"
+USER_AGENT = "PastaTshield/0.4 (+local-requested-passive-inspection)"
 BLOCKED_SUFFIXES = (".local", ".localhost", ".internal", ".home", ".lan", ".test", ".invalid", ".onion")
 PUBLIC_SUFFIX = tldextract.TLDExtract(suffix_list_urls=(), cache_dir=False)
 RDAP_CACHE = RdapCache(Path(__file__).resolve().parents[2] / "data" / "rdap-cache.sqlite3")
@@ -93,7 +93,7 @@ class _PinnedHTTPS(http.client.HTTPSConnection):
             raise
 
 
-def _fetch_once(url: str) -> dict:
+def _fetch_once(url: str, *, allow_partial: bool = False) -> dict:
     normalized = normalize_target(url)
     parts = urlsplit(normalized)
     host = parts.hostname
@@ -107,28 +107,51 @@ def _fetch_once(url: str) -> dict:
                     "Accept": "text/html,application/xhtml+xml,application/json;q=0.8,*/*;q=0.2",
                     "Accept-Encoding": "identity", "Connection": "close"})
         response = conn.getresponse()
+        content_type = response.getheader("Content-Type", "")
+        location = response.getheader("Location")
+        mime = content_type.partition(";")[0].strip().lower()
+        is_html = mime in {"text/html", "application/xhtml+xml"}
+        redirect = response.status in {301, 302, 303, 307, 308} and bool(location)
         length = response.getheader("Content-Length")
-        if length and length.isdigit() and int(length) > MAX_BYTES:
-            raise ValueError("Réponse trop volumineuse : limite de 420 000 octets.")
-        data = response.read(MAX_BYTES + 1)
-        if len(data) > MAX_BYTES:
-            raise ValueError("Réponse trop volumineuse : limite de 420 000 octets.")
+        announced_oversize = bool(length and length.isdigit() and int(length) > MAX_BYTES)
+
+        # Les redirections sont contrôlées sur leur en-tête Location. Inutile
+        # de télécharger un corps éventuellement immense avant le saut suivant.
+        if redirect:
+            data = b""
+            truncated = False
+        else:
+            # Un HTML long est inspecté sur son début, sans transfert illimité.
+            # Les autres formats (notamment les JSON RDAP) doivent rester complets.
+            if announced_oversize and not (allow_partial and is_html):
+                raise ValueError(f"Réponse trop volumineuse : limite de {MAX_BYTES:,} octets.")
+            data = response.read(MAX_BYTES + 1)
+            truncated = announced_oversize or len(data) > MAX_BYTES
+            if truncated and not (allow_partial and is_html):
+                raise ValueError(f"Réponse trop volumineuse : limite de {MAX_BYTES:,} octets.")
+            data = data[:MAX_BYTES]
+
         return {
             "url": normalized, "status": response.status, "ip": ip,
-            "headers": response.getheaders(), "content_type": response.getheader("Content-Type", ""),
-            "body": data, "location": response.getheader("Location")
+            "headers": response.getheaders(), "content_type": content_type,
+            "body": data, "location": location, "truncated": truncated
         }
     finally:
         conn.close()
 
 
-def fetch_site(target: str, max_redirects: int = MAX_REDIRECTS, require_https: bool = False) -> tuple[dict, list[dict]]:
+def fetch_site(target: str, max_redirects: int = MAX_REDIRECTS, require_https: bool = False,
+               allow_partial: bool = False) -> tuple[dict, list[dict]]:
+    """Pour l'analyse HTML seulement, autoriser un préfixe borné et signalé.
+
+    RDAP et les autres réponses structurées restent strictement complètes.
+    """
     current = normalize_target(target)
     if require_https and not current.startswith("https://"):
         raise ValueError("RDAP impose une connexion HTTPS.")
     chain = []
     for redirect in range(max_redirects + 1):
-        fetched = _fetch_once(current)
+        fetched = _fetch_once(current, allow_partial=True) if allow_partial else _fetch_once(current)
         chain.append({"url": current, "status": fetched["status"]})
         if fetched["status"] in {301, 302, 303, 307, 308} and fetched["location"]:
             if redirect == max_redirects:
@@ -256,11 +279,16 @@ def analyze_url(url: str, mode: str = "renforce", external_consent: bool = False
     chain = []
     fetch_error = None
     try:
-        fetched, chain = fetch_site(normalized)
+        fetched, chain = fetch_site(normalized, allow_partial=True)
         checks.append({"name": "Connexion au site", "status": "effectué",
                        "detail": f"HTTP {fetched['status']} via une IP publique contrôlée."})
         if fetched["status"] >= 400:
             limitations.append(f"Le serveur a répondu HTTP {fetched['status']} ; l'analyse du contenu peut être incomplète.")
+        if fetched.get("truncated"):
+            limitations.append(
+                f"La page dépasse {MAX_BYTES:,} octets : seul son début a été examiné. "
+                "Des formulaires ou éléments suspects peuvent se trouver plus loin."
+            )
     except Exception as exc:
         security_event("URL_FETCH_FAILED")
         fetch_error = str(exc)
@@ -278,26 +306,40 @@ def analyze_url(url: str, mode: str = "renforce", external_consent: bool = False
     checks.append({"name": "Redirections", "status": "effectué" if fetched else "non vérifié",
                    "detail": f"{max(0,len(chain)-1)} saut(s) vérifié(s), destination contrôlée." if fetched else "Contrôle interrompu."})
 
+    partial = bool(fetched and fetched.get("truncated"))
     privacy = {"data_requested": [], "form_count": 0, "third_party_domains": [], "known_trackers": [], "observed_cookies": 0,
-               "observed_transmissions": [], "not_observed": "Trafic JavaScript, serveur, cookies persistants et parcours authentifiés."}
-    if fetched and mode != "standard" and "html" in fetched["content_type"].lower():
+               "observed_transmissions": [], "partial_inspection": partial,
+               "inspected_bytes": len(fetched["body"]) if fetched else 0,
+               "not_observed": "Trafic JavaScript, serveur, cookies persistants et parcours authentifiés."}
+    if fetched and "html" in fetched["content_type"].lower():
         html = fetched["body"].decode("utf-8", errors="replace")
         details = inspect_html(html, fetched["url"])
         privacy.update({k: details[k] for k in ["data_requested", "form_count", "third_party_domains", "known_trackers"]})
         privacy["observed_cookies"] = sum(1 for name, _ in fetched["headers"] if name.lower() == "set-cookie")
         if details["insecure_forms"]:
             add("Formulaire non chiffré", "Élevé", "Action HTTP", "Un formulaire peut soumettre des données sans chiffrement.")
-        if details["known_trackers"]:
+        if details["known_trackers"] and mode != "standard":
             add("Traceurs identifiés", "Modéré", ", ".join(details["known_trackers"][:3]),
                 "Des domaines de suivi connus figurent parmi les ressources référencées. Leur exécution n'a pas été mesurée.")
-        checks.append({"name": "HTML et formulaires", "status": "effectué",
-                       "detail": f"{details['form_count']} formulaire(s) ; {len(details['third_party_domains'])} domaines tiers référencés."})
+        checks.append({
+            "name": "HTML et formulaires", "status": "partiel" if partial else "effectué",
+            "detail": (
+                f"Début de page uniquement ({len(fetched['body']):,} octets) : "
+                f"{details['form_count']} formulaire(s) et {len(details['third_party_domains'])} domaines tiers repérés. "
+                "D'autres éléments peuvent ne pas avoir été vus."
+                if partial else
+                f"{details['form_count']} formulaire(s) ; {len(details['third_party_domains'])} domaines tiers référencés."
+            )
+        })
     else:
         checks.append({"name": "HTML et formulaires", "status": "non vérifié",
-                       "detail": "Mode Standard ou page HTML indisponible."})
+                       "detail": "Page HTML indisponible."})
 
-    sources = [{"name": "Inspection passive locale", "status": "effectué" if fetched else "non vérifié",
-                "detail": "Requête contrôlée, sans exécuter le JavaScript ni charger des sous-ressources."}]
+    sources = [{"name": "Inspection passive locale",
+                "status": "partiel" if partial else ("effectué" if fetched else "non vérifié"),
+                "detail": "Inspection limitée au début du document, sans exécuter JavaScript ni sous-ressources."
+                          if partial else
+                          "Requête contrôlée, sans exécuter le JavaScript ni charger des sous-ressources."}]
     if external_consent:
         try:
             data, cached = _rdap_domain_cached(original.hostname)
@@ -321,6 +363,10 @@ def analyze_url(url: str, mode: str = "renforce", external_consent: bool = False
 
     # Insufficient verification must never lead to green / Faible.
     if not fetched or fetched["status"] >= 400 or "html" not in fetched["content_type"].lower():
+        risk = "Indéterminé"
+    elif partial and not any(f["severity"] in {"Critique", "Élevé"} for f in findings):
+        # Une inspection partielle ne peut jamais produire « Faible ».
+        # Un indice élevé effectivement observé peut rester signalé.
         risk = "Indéterminé"
     elif any(f["severity"] == "Critique" for f in findings):
         risk = "Critique"

@@ -23,6 +23,8 @@
 - [ ] Verrouiller les dépendances Python, mettre en place les contrôles de sécurité reproductibles et la CI.
 - [ ] Construire et valider un corpus de messages FR/BE annotés, puis améliorer les faux positifs/négatifs.
 - [ ] Ajouter des sources de réputation uniquement avec transparence et consentement granularisé.
-- [ ] Préparer un installateur Windows signé, des mises à jour vérifiées et une désinstallation respectant les données locales.
+- [ ] **Cible desktop : Tauri v2 (après audit et sauvegarde)**. Prototype Windows avec frontend React, backend Python embarqué comme processus auxiliaire (*sidecar*) compilé, WebView2, emplacement des données dans le profil utilisateur, communication locale contrôlée, démarrage/arrêt propres et protection XSS/CSP revérifiée.
+- [ ] Distribuer un installateur Windows NSIS `.exe` ou MSI, signer le code et les mises à jour, prévoir WebView2 et tester une installation/désinstallation sur PC vierge sans Python/Node installés.
+- [ ] Ensuite seulement évaluer macOS `.app`/DMG avec build et notarisation spécifiques, puis une extension navigateur limitée et auditable ; l'application mobile reste une phase distincte.
 
 **Note :** un build réussi et des tests de contraste de jetons ne suffisent pas à qualifier l'application d'accessible ni de prête pour une distribution grand public.

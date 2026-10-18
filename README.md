@@ -10,7 +10,7 @@ Application web responsive de prévention des arnaques FR/BE, exécutée sur la 
 
 - Analyse de textes collés : e-mails, SMS, messageries et cas WhatsApp, via règles JSON versionnées.
 - Analyse à la demande d'une URL publique HTTP(S), sans JavaScript : validation stricte, résolutions DNS publiques uniquement, IP de connexion épinglée, TLS standard, redirections revérifiées, limites de temps/taille.
-- Inspection du HTML public : champs de formulaire, domaines tiers référencés, traceurs connus référencés, en-têtes `Set-Cookie` de la réponse.
+- Inspection du HTML public : champs de formulaire, domaines tiers référencés, traceurs connus référencés, en-têtes `Set-Cookie` de la réponse. **Pages volumineuses :** maximum 1 Mo lu ; l'analyse continue sur le début de la page avec un état « partiel ». Sans indice fort, le verdict reste « Indéterminé », jamais « Faible » par défaut. Le mode Standard inspecte aussi les formulaires de base.
 - Option de consultation RDAP (par analyse et après consentement explicite) pour rechercher la date d'enregistrement disponible du domaine (suffixes publics corrects pour .co.uk, .com.au, etc.). La réponse RDAP est mise en cache localement 24 heures après consentement.
 - Rapports sans pourcentage inventé : niveau textuel, indicateurs, recommandations, contrôles, sources, limites, vue simple/détaillée, copie texte.
 - Historique SQLite local : résumé uniquement par défaut ; conservation du contenu seulement sur demande ; effacement de l'historique et du cache RDAP.

@@ -88,13 +88,15 @@ def analyze_text(content: str, mode: str = "renforce") -> dict:
         except ValueError:
             continue
         if host in SHORTENERS:
-            findings.append({"title": "Lien raccourci", "severity": "Modéré",
+            findings.append({"id": "url.shortener", "version": 1,
+                             "title": "Lien raccourci", "severity": "Modéré",
                              "evidence": host, "reason": "Un lien raccourci masque sa destination finale ; elle n'a pas été vérifiée ici."})
         if host in {"wa.me", "chat.whatsapp.com", "api.whatsapp.com"}:
             window = text[max(0, url_match.start() - 175):min(len(text), url_match.end() + 175)]
             context = _hit(r"(?:investissement|rendement(?: garanti)?|gain garanti|vous avez gagné|paiement|transf[ée]rez|envoyez.{0,40}code|colis bloqu[ée]|remboursement)", window)
             if context:
-                findings.append({"title": "Invitation WhatsApp à vérifier", "severity": "Élevé",
+                findings.append({"id": "messaging.whatsapp_sensitive", "version": 1,
+                                 "title": "Invitation WhatsApp à vérifier", "severity": "Élevé",
                                  "evidence": host, "reason": "Ce lien WhatsApp est accompagné d'une sollicitation sensible ou inhabituelle."})
         for brand, official_domains in brand_found:
             slug = re.sub(r"[^a-z0-9]", "", brand.casefold().replace("ô", "o"))
@@ -102,13 +104,15 @@ def analyze_text(content: str, mode: str = "renforce") -> dict:
             if (host and (slug in compact_host)
                     and not any(host == d or host.endswith("." + d) for d in official_domains)):
                 # Seule une imitation visible dans le hostname déclenche l'alerte.
-                findings.append({"title": "Domaine différent de l'organisme cité", "severity": "Élevé",
+                findings.append({"id": "brand.domain_mismatch", "version": 1,
+                                 "title": "Domaine différent de l'organisme cité", "severity": "Élevé",
                                  "evidence": brand + " ≠ " + host,
                                  "reason": "Le nom de domaine ne correspond pas aux domaines officiels connus pour cet organisme."})
                 break
 
     if len(urls) > 2 and len({urlsplit(u).hostname for u in urls}) > 2:
-        findings.append({"title": "Multiples destinations", "severity": "Modéré",
+        findings.append({"id": "url.multiple_domains", "version": 1,
+                         "title": "Multiples destinations", "severity": "Modéré",
                          "evidence": str(len(urls)) + " liens", "reason": "Plusieurs domaines différents sont présents dans le message."})
 
     # Un lien non vérifié ne doit pas devenir un faux indicateur de fraude.

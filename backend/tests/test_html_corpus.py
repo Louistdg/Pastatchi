@@ -16,7 +16,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from app.urlscan import MAX_BYTES, analyze_url, inspect_html
 
-FIXTURE_DIR = Path(__file__).resolve().parent / "fixtures"
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from fixture_support import verified_fixture  # noqa: E402
+
 WIKIPEDIA_SHA256 = "5c0de7d8a1af1dc8c06cc2a517265ff96db0ed11114a62be2625ed13c9cdb466"
 FAKE_URL = "https://assurance-simulation.example.com/"
 LEGIT_URL = "https://compte.example.com/"
@@ -24,7 +26,7 @@ WIKIPEDIA_URL = "https://www.wikipedia.org/"
 
 
 def fixture_bytes(name: str) -> bytes:
-    return (FIXTURE_DIR / name).read_bytes()
+    return verified_fixture("html/" + name)
 
 
 def offline_report(name: str, url: str, *, mode: str = "renforce") -> dict:
@@ -99,6 +101,19 @@ class HtmlCorpusTests(unittest.TestCase):
         self.assertEqual(report["findings"], [])
         self.assertEqual(report["risk"], "Faible")
         self.assertIn("Mot de passe", report["collection"]["data_requested"])
+
+    def test_third_party_script_reference_is_detected_without_claiming_execution(self):
+        body = fixture_bytes("script-tiers.html").decode("utf-8")
+        self.assertIn("eval('2 + 2')", body)  # Exemple inerte dans un script application/json.
+        details = inspect_html(body, "https://portail-demo.example.com/")
+        self.assertIn("ressource-inconnue.example.invalid", details["third_party_domains"])
+        self.assertNotIn("ressource-inconnue.example.invalid", details["known_trackers"])
+        self.assertEqual(details["form_count"], 0)
+        report = offline_report("script-tiers.html", "https://portail-demo.example.com/")
+        self.assertEqual(report["risk"], "Faible")
+        self.assertFalse(any("script malveillant" in str(f).lower() for f in report["findings"]))
+        self.assertTrue(any("JavaScript" in note or "script" in note.lower()
+                            for note in report["limitations"]))
 
     def test_fixtures_are_not_operational_phishing_pages(self):
         fake = fixture_bytes("faux-ameli.html").decode("utf-8")

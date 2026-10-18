@@ -18,7 +18,7 @@
 
 ## Couverture des tests et traçabilité (avant la bêta)
 
-- [ ] **Harmoniser la traçabilité des constats heuristiques** du moteur de messages (`analyzer.py`) : `id` et `version` manquent pour certains liens raccourcis, invitations WhatsApp et domaines imités. Ne pas déclarer tous les constats versionnés avant correction.
+- [x] **Traçabilité des constats du moteur de messages** : les quatre familles d'heuristiques (`url.shortener`, `messaging.whatsapp_sensitive`, `brand.domain_mismatch`, `url.multiple_domains`) portent désormais `id` et `version` (=1), testés avec les constats déclaratifs ; vérifier séparément la traçabilité du moteur d'URL et la stabilité future des identifiants.
 - [ ] **Tests d'attaque bout en bout du transport** : DNS rebinding/TOCTOU dans un labo isolé, IP épinglée et SNI, réponses HTTP hostiles, protection locale depuis une page Web tierce.
 - [ ] **Parcours E2E Playwright sur base jetable** : analyse, historique, coffre et presse-papiers, clavier, zoom et lecteurs d'écran. Ne jamais effacer les données réelles pendant des tests.
 - [ ] **Valider et étendre la matrice QA** `docs/audit/QA_MATRIX_V0.4.md` : documenter les écarts, leur gravité et les retests.
@@ -28,7 +28,7 @@
 - [ ] Faire réaliser l'audit indépendant du frontend (XSS/CSP/secret en mémoire), de l'API locale et des vérifications URL/SSRF.
 - [ ] Implémenter et tester une sauvegarde/export et restauration **chiffrés et authentifiés** du coffre, y compris sur un autre ordinateur.
 - [ ] Verrouiller les dépendances Python, mettre en place les contrôles de sécurité reproductibles et la CI.
-- [ ] Construire et valider un corpus de messages FR/BE annotés, puis améliorer les faux positifs/négatifs.
+- [ ] Constituer un **corpus quantitatif FR/BE séparé** des huit fixtures qualitatives, avec données authentifiées/consenties, vérité terrain, protocole d'échantillonnage et métriques de faux positifs/négatifs. Évaluer aussi les domaines IDN/homoglyphes et les messages utilisant une véritable URL officielle à des fins frauduleuses.
 - [ ] Ajouter des sources de réputation uniquement avec transparence et consentement granularisé.
 - [ ] **Cible desktop : Tauri v2 (après audit et sauvegarde)**. Prototype Windows avec frontend React, backend Python embarqué comme processus auxiliaire (*sidecar*) compilé, WebView2, emplacement des données dans le profil utilisateur, communication locale contrôlée, démarrage/arrêt propres et protection XSS/CSP revérifiée.
 - [ ] Distribuer un installateur Windows NSIS `.exe` ou MSI, signer le code et les mises à jour, prévoir WebView2 et tester une installation/désinstallation sur PC vierge sans Python/Node installés.

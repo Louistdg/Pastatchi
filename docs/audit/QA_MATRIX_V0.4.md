@@ -1,6 +1,6 @@
 # PastaTshield V0.4 — Matrice de tests et de couverture QA
 
-**État au 18 octobre 2026 — alpha locale, aucun audit indépendant réalisé.**
+**État au 19 octobre 2026 — alpha locale, aucun audit indépendant réalisé.**
 
 Cette matrice transpose la checklist de sécurité en **preuves disponibles**, **tests de non-régression automatisés** et **chantiers non couverts**. Les attentes sont alignées avec les comportements réellement implémentés, pas avec des spécifications théoriques qui n'existent pas encore.
 
@@ -47,8 +47,14 @@ La réussite d'un test signifie uniquement que **son assertion précise passe** 
 | Moyenne | Mode Standard ignore « urgence » ; Renforcé applique la règle | **A** | `test_standard_excludes_urgency_rule_renforce_includes_it` |
 | Moyenne | Message « Bonjour » → **Indéterminé** | **A** | `test_short_message_indeterminate` |
 | Haute | Constats issus des règles JSON : `id`, `version`, `title`, `severity`, `reason` | **A** | `test_versioned_declarative_findings_are_traceable` |
-| Haute | **Tous** les constats, y compris liens raccourcis / WhatsApp / domaines imités, possèdent `id` et `version` | **N** | **Écart actuel :** les constats heuristiques sont produits sans ces champs. À corriger avec schéma versionné avant de promettre une traçabilité universelle |
-| Critique | Mesures de faux positifs/faux négatifs sur corpus représentatif anonymisé FR/BE | **N** | Quelques scénarios synthétiques uniquement ; aucun taux de détection fiable ni seuil de référence |
+| Haute | **Tous les constats de l'analyse de texte**, dont raccourcisseurs / WhatsApp / domaines imités / destinations multiples, ont `id` et `version` | **A** | `backend/tests/test_messages_corpus.py::test_every_message_finding_has_stable_metadata` ; schéma de constats URL/HTML distinct à revoir par l'auditeur |
+| Critique | Mesures de faux positifs/faux négatifs sur corpus FR/BE authentifié, annoté et représentatif | **N** | Quatre messages FR/BE *synthétiques* ajoutés pour tests **qualitatifs** ; aucune vérité terrain réelle ni métrique statistique de précision/rappel |
+
+| Haute | La Poste, lien de référence `laposte.fr` dans un SMS fictif → pas d'usurpation déduite | **A** | `backend/tests/test_messages_corpus.py` + `fixtures/messages/laposte-reference.txt` ; **ne prouve pas l'authenticité d'un SMS réel** |
+| Haute | itsme, lien de référence `itsme-id.com` dans un SMS fictif → pas d'usurpation déduite | **A** | `test_messages_corpus.py` + `fixtures/messages/itsme-reference.txt` ; aucune identité d'expéditeur vérifiée |
+| Haute | Faux impôts `impots-gouv-remboursement.example` → risque Élevé | **A** | `test_messages_corpus.py` + fixture synthétique, `brand.domain_mismatch` version 1 |
+| Haute | Faux bpost paiement `bpost-livraison.example` → risque Élevé | **A** | `test_messages_corpus.py` + fixture synthétique, `brand.domain_mismatch` version 1 |
+| Haute | Manifeste SHA-256 couvrant toutes les fixtures et rejet d'un octet muté | **A** | `backend/tests/test_fixture_manifest.py` et `fixtures/MANIFEST.json` ; cohérence du dépôt, **pas une signature externe** |
 
 ## 3. Analyse URL, HTML et RDAP
 
@@ -61,15 +67,16 @@ La réussite d'un test signifie uniquement que **son assertion précise passe** 
 | Haute | `socket.timeout` et `ssl.SSLError` → **Indéterminé** | **A** | `test_socket_timeout_and_tls_errors_result_indeterminate` |
 | Haute | HTML `input[type=password]`, carte, IBAN, action HTTP | **A** | `backend/tests/test_html_corpus.py` ; HTML fictif, sans JavaScript exécuté |
 | Haute | `<base href="https://evil.example.com/">` fait résoudre le `src` relatif vers le domaine externe | **A** | `test_base_href_is_respected_for_external_scripts` |
-| Haute | Formulaire de recherche Wikipédia → pas d'alerte injustifiée | **A** | Snapshot réel `backend/tests/fixtures/wikipedia.html`, SHA-256 fixé |
-| Haute | Formulaire HTTPS avec mot de passe seul → pas de condamnation automatique | **A** | `backend/tests/fixtures/formulaire-legitime.html` |
+| Haute | Formulaire de recherche Wikipédia → pas d'alerte injustifiée | **A** | Snapshot réel `backend/tests/fixtures/html/wikipedia.html`, SHA-256 vérifié par `MANIFEST.json` |
+| Haute | Formulaire HTTPS avec mot de passe seul → pas de condamnation automatique | **A** | `backend/tests/fixtures/html/formulaire-legitime.html` |
 | Haute | Cache RDAP : second appel sans requête réseau | **A** | `test_rdap_cache_avoids_second_network_call` (mock de la source) |
 | Haute | Suffixe `sub.example.co.uk` → domaine enregistrable `example.co.uk` | **A** | `test_rdap_multilevel_public_suffix` |
 | Critique | Aucun RDAP sans consentement explicite | **A** | `test_no_rdap_contact_without_user_consent` |
 | Critique | Anti-SSRF RDAP à travers redirections, certificats et flux hostiles | **P** | Contrôles communs ; audit manuel redirection et résolution obligatoire |
 | Haute | Sites réels Cloudflare / CAPTCHA / JS requis / pages lentes | **M** | Vérifier la bonne mention « non vérifié », sans contourner les protections des sites |
 | Haute | Contenu HTML obfusqué, encodages inattendus, bases malicieuses, charset non UTF-8 | **N** | Parsing statique ; couverture non exhaustive |
-| Critique | Scanner le comportement de JavaScript malveillant | **N** | Hors périmètre actuel : référence aux scripts, **pas** analyse comportementale |
+| Haute | Référence `<script src>` externe fictive → domaine tiers signalé, sans prétendre à une exécution ou malveillance | **A** | `test_html_corpus.py::test_third_party_script_reference_is_detected_without_claiming_execution` ; HTML synthétique et `eval()` inerte |
+| Critique | Scanner le comportement de JavaScript malveillant | **N** | Hors périmètre : `eval`, obfuscation, formulaires dynamiques, requêtes différées et exfiltration à l'exécution non analysés |
 
 ## 4. Coffre et cryptographie
 
@@ -144,13 +151,19 @@ npm run test:security
 
 **Séparation des preuves :** les tests ci-dessus utilisent des mocks réseau et des bases éphémères ; ce sont des tests unitaires/d'intégration locale. `npm audit` nécessite des métadonnées publiques du registre npm et n'est pas équivalent à un test local hors réseau. Les scénarios E2E, la sécurité navigateur et les essais contre des serveurs réels autorisés sont un chantier distinct.
 
+### Nature des preuves et des exemples
+
+Les **huit fixtures** (`backend/tests/fixtures/html/`, `messages/`) forment un corpus **qualitatif** : quatre HTML dont une capture de Wikipédia, et quatre messages de référence/usurpation **tous synthétiques**. Le manifeste SHA-256 est vérifié **avant chaque assertion**, et un test détecte la mutation simulée d'un octet. Ces scénarios ne permettent pas de calculer une précision ou un rappel sur des SMS réels. Les mocks DNS/HTTP, la présence de CSP et les tests crypto ne prouvent respectivement pas la sécurité d'un réseau hostile, l'absence de XSS réel ou l'impossibilité de vol de clés en mémoire.
+
+Pour les questions ouvertes SSRF/JS/CT logs/Safari/Playwright, voir `README-AUDIT-V0.4.md`, `docs/audit/QUESTIONNAIRE_AUDITEUR_V0.4.md` et `docs/audit/NOTE_AUDITEUR_V0.4.md`.
+
 ## 6. Décision d'audit
 
 Cette matrice est un **plan de vérification**, pas un certificat de qualité ni une mesure de couverture du code en pourcentage. Avant toute bêta publique, demander au minimum à l'auditeur :
 
 - une revue SSRF réseau adversarial (DNS rebinding et redirections, TLS/IP pinning), des formats et encodages HTTP ;
 - une revue XSS/CSP, du stockage navigateur des secrets et des logs ;
-- une revue des métadonnées manquantes dans les constats heuristiques ;
+- une revue de la stabilité du schéma et de la sémantique des identifiants/version des constats d'analyse de texte (ajoutés et testés), ainsi que des constats de l'analyse URL/HTML ;
 - une analyse cryptographique du coffre, un protocole de **sauvegarde/restauration chiffrée** et une preuve de restauration sur une autre machine ;
 - des E2E isolés, une base de messages FR/BE anonymisés plus grande et un contrôle accessibilité WCAG sur composants réels.
 

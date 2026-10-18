@@ -1,8 +1,8 @@
 # PastaTshield V0.4 — dossier de revue de sécurité indépendante
 
-**Préparé le :** 18 octobre 2026
+**Dossier complété le :** 19 octobre 2026
 **Statut :** application **alpha locale** (FastAPI + React, exécutée sur `127.0.0.1`).
-**Révision auditée :** le commit indiqué dans le nom du ZIP livré. Cette archive est **un objet à auditer, pas un logiciel certifié**.
+**Révision à auditer :** le commit indiqué dans le nom du ZIP livré. Cette archive est **un objet à auditer, pas un logiciel certifié**.
 **Pour le modèle de menaces initial :** [THREAT_MODEL.md](THREAT_MODEL.md).
 **Pour la couverture des tests, leurs preuves et les scénarios encore manquants :** [docs/audit/QA_MATRIX_V0.4.md](docs/audit/QA_MATRIX_V0.4.md).
 **Pour le périmètre d'origine V0.3 :** [README-AUDIT.md](README-AUDIT.md) (figé, référence historique, **pas** un état V0.4).
@@ -12,7 +12,7 @@
 - Code source du backend FastAPI (analyse des messages, analyse URL/HTML, prévention SSRF, API locale, historique, RDAP sur consentement, coffre).
 - Code source React/Vite (Lexend, thème Dark Professional, rapports et coffre).
 - Répertoire local de **24 adresses de référence FR/BE**, avec provenance documentaire et date de revue.
-- Tests backend et frontend, **dont un corpus figé de HTML** avec snapshot de Wikipédia et deux pages de démonstration fictives. Voir [backend/tests/fixtures/README.md](backend/tests/fixtures/README.md) pour l'attribution et les limites.
+- Tests backend et frontend, **dont un corpus qualitatif figé de 8 fichiers** : 4 HTML (capture réelle Wikipédia + 3 simulations fictives) et 4 messages FR/BE synthétiques (La Poste, itsme, faux impôts, faux bpost). Le [MANIFEST.json](backend/tests/fixtures/MANIFEST.json) associe provenance, résultat attendu, taille et SHA-256 à chaque fichier. Voir [backend/tests/fixtures/README.md](backend/tests/fixtures/README.md) pour l'attribution et les limites.
 - Dépendances Python **déclarées par plages** et verrou npm `frontend/package-lock.json`; documentation de conception.
 
 Le ZIP est créé via **`git archive HEAD`** pour exclure les données locales et les fichiers non versionnés. **Aucun secret personnel, coffret SQLite, token de session ou profil utilisateur n'est nécessaire pour l'audit.** Les pages HTML fictives ne contiennent aucune donnée personnelle réelle.
@@ -23,7 +23,8 @@ Le ZIP est créé via **`git archive HEAD`** pour exclure les données locales e
 2. **Modes d'analyse.** Le mode Standard inspecte également les champs de formulaire du HTML ; les traceurs référencés sont pris en compte dans les autres modes. Aucun JavaScript distant n'est exécuté.
 3. **Répertoire de sites.** `backend/app/official_sites_frbe.json` + route `GET /api/v1/official-sites` + UI React. Les termes tapés sont filtrés **en mémoire du navigateur** après un chargement local unique. Le clic `Source` ouvre un site externe uniquement sur demande. La présence d'une adresse **n'est pas un certificat de sécurité**.
 4. **UX et accessibilité de lecture.** Police locale Lexend, contrastes des textes de statut, focus visible et réduction des animations. Des **tests d'accessibilité complets auprès d'utilisateurs** restent nécessaires.
-5. **Corpus hors ligne de non-régression.** `backend/tests/fixtures/wikipedia.html` est un snapshot réel du HTML du portail Wikipédia ; `faux-ameli.html` et `formulaire-legitime.html` sont des créations fictives. Les tests vérifient le formulaire de recherche non suspect, les champs sensibles et l'action de soumission HTTP, ainsi que l'absence de classification abusive du seul champ mot de passe.
+5. **Corpus hors ligne de non-régression.** `backend/tests/fixtures/html/wikipedia.html` est une capture HTML réelle ; les sept autres fixtures sont des **créations synthétiques**. Le manifeste SHA-256 est vérifié automatiquement **avant chaque assertion de contenu**, sur l'ensemble des huit fichiers. Ces cas valident des comportements **qualitatifs**, pas un taux de faux positifs ou de faux négatifs.
+6. **Traçabilité des constats de texte.** Les heuristiques lien raccourci, invitation WhatsApp sensible, imitation de domaine et destinations multiples portent désormais `id` et `version` stables, comme les règles JSON. Cette version n'est **pas** une version de l'application ni une garantie sur la qualité des heuristiques.
 
 Les modifications de V0.4 sont **non auditées indépendamment**. Le fait que les tests soient au vert ne constitue pas une preuve de résistance aux attaques.
 
@@ -43,9 +44,11 @@ Les modifications de V0.4 sont **non auditées indépendamment**. Le fait que le
 
 | Contrôle | Résultat |
 | --- | --- |
-| Backend : `unittest discover -s backend/tests -q` | **100 tests réussis** |
+| Backend : `unittest discover -s backend/tests -q` | **111 tests réussis** |
 | Matrice sécurité API/règles/URL/coffre : `test_audit_matrix.py` (inclus ci-dessus) | **30 tests réussis** |
-| Régression HTML : `test_html_corpus.py` (incluse ci-dessus) | **7 tests réussis** |
+| Régression HTML : `test_html_corpus.py` (incluse ci-dessus) | **8 tests réussis** |
+| Scénarios messages FR/BE : `test_messages_corpus.py` (inclus ci-dessus) | **5 tests réussis** |
+| Contrôle MANIFEST/SHA-256 : `test_fixture_manifest.py` (inclus ci-dessus) | **5 tests réussis** |
 | Lint Python ciblé `ruff --select E4,E7,E9,F` | **Réussi** |
 | `npm run build` | **Réussi** |
 | `npm run test:directory` | **5 réussis** |
@@ -55,7 +58,7 @@ Les modifications de V0.4 sont **non auditées indépendamment**. Le fait que le
 | `npm run test:all` (ensemble frontend, sans double comptage) | **26 tests réussis** |
 | `npm audit --omit=dev --audit-level=high` | **0 vulnérabilité connue signalée** au moment du contrôle |
 
-**Note :** les 7 tests HTML et les 30 tests de la matrice sont **compris dans les 100 tests backend** ; les 5 nouveaux tests cryptographiques sont **compris dans les 26 tests frontend**. Ne pas additionner deux fois. Le lint, le build et les tests unitaires/intégration **ne remplacent pas** un audit indépendant, une évaluation statistique de détection ni un test de pénétration.
+**Note :** les 8 tests HTML, les 5 tests messages, les 5 tests d'intégrité et les 30 tests de la matrice sont **compris dans les 111 tests backend** ; les 5 nouveaux tests cryptographiques sont **compris dans les 26 tests frontend**. Ne pas additionner deux fois. Le lint, le build et les tests unitaires/intégration **ne remplacent pas** un audit indépendant, une évaluation statistique de détection ni un test de pénétration.
 
 ## 5. Commandes pour reproduction sur Windows
 
@@ -85,7 +88,20 @@ Lancer localement uniquement si le laboratoire est isolé et sans données perso
 
 Ne tester des sites Internet tiers qu'avec une autorisation appropriée. Les scénarios du corpus HTML sont conçus pour fonctionner **sans réseau** et ne doivent pas être utilisés comme sites réels.
 
-## 6. Travaux bloquants avant diffusion
+## 6. Questions ouvertes et limites pour l'auditeur
+
+Voici précisément **ce que nous ne savons pas encore démontrer**. Cette liste ne signifie pas que les protections ont été contournées ; elle nomme les essais manquants.
+
+- **Réseau/SSRF :** une simulation du DNS rebinding avec réponses publique puis privée passe, mais un TTL DNS très court, une résolution concurrente hostile et un scénario TOCTOU complet ne sont pas testés sur un réseau adversarial réel. Le comportement de `_PinnedHTTPS` doit être revu pour le SNI, les certificats renouvelés ou remplacés pendant la connexion, la conformité TLS et les redirections.
+- **JavaScript/XSS :** `<script src>` révèle un domaine référencé. En revanche, `eval()`, l'obfuscation, les requêtes générées à l'exécution, les déclenchements différés et les formulaires fabriqués en JavaScript **ne sont pas inspectés**. Les tests unitaires de CSP ne prouvent pas l'absence de XSS dans un navigateur réel.
+- **Cryptographie/coffre :** les tests AES-GCM et WebCrypto vérifient le chiffrement et l'intégrité dans des cas définis, **pas** la résistance à une extraction de secrets en mémoire, à des extensions malveillantes, à une compromission locale ou à des sauvegardes défectueuses. **Export/restauration chiffrés encore absents.**
+- **Accessibilité :** le contraste des jetons, le focus et les préférences de mouvement sont testés sur le CSS ; le parcours complet au clavier, la lecture par lecteur d'écran, le timer du presse-papiers sur Safari, le zoom et l'ergonomie auprès de seniors restent non vérifiés.
+- **Authenticité des messages :** les deux exemples « de référence » La Poste et itsme sont **synthétiques** et n'authentifient aucun message réel. Une URL officielle copiée dans un message peut coexister avec une fraude. Les huit fixtures sont des tests **qualitatifs** ; il n'existe **aucune mesure statistique** de précision ou de rappel sur des SMS FR/BE réels annotés.
+- **E2E Playwright :** pas encore ajouté ; l'interface et ses parcours sont toujours susceptibles d'évoluer. Avant une diffusion grand public, il faudra automatiser les scénarios critiques sur une base jetable et valider les résultats en navigateur réel, sans supprimer de données utilisateur.
+
+**Portée des preuves :** les mocks de DNS/HTTP ne sont pas des tests de pénétration réseau ; la présence de règles CSP ne prouve pas l'absence de XSS ; la réussite de WebCrypto ne prouve pas la résistance à un vol de mémoire. Pour accélérer le cadrage, consulter le [questionnaire destiné à l'auditeur](docs/audit/QUESTIONNAIRE_AUDITEUR_V0.4.md) et la [note d'accompagnement](docs/audit/NOTE_AUDITEUR_V0.4.md).
+
+## 7. Travaux bloquants avant diffusion
 
 - **Audit indépendant** complet du coffre, du frontend, de l'API locale et du SSRF ; correction et retest des failles confirmées.
 - **Export/restauration chiffrés et authentifiés** du coffre, testé sur une autre machine.

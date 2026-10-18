@@ -2,7 +2,7 @@
 
 **PastaTshield V0.4 (prototype local)** — « Un doute ? On vérifie. »
 
-**Pour une revue indépendante V0.4 :** commencez par [README-AUDIT-V0.4.md](README-AUDIT-V0.4.md), le [modèle de menaces](THREAT_MODEL.md) et les [fixtures HTML de non-régression](backend/tests/fixtures/README.md). L'ancien [dossier d'audit V0.3](README-AUDIT.md) reste disponible. Aucun de ces documents ne constitue une certification.
+**Pour une revue indépendante V0.4 :** commencez par [README-AUDIT-V0.4.md](README-AUDIT-V0.4.md), le [modèle de menaces](THREAT_MODEL.md) et les [corpus qualitatif HTML + messages FR/BE](backend/tests/fixtures/README.md). L'ancien [dossier d'audit V0.3](README-AUDIT.md) reste disponible. Aucun de ces documents ne constitue une certification.
 
 Application web responsive de prévention des arnaques FR/BE, exécutée sur la machine de l'utilisateur.
 
@@ -18,7 +18,7 @@ Application web responsive de prévention des arnaques FR/BE, exécutée sur la 
 - Interface React responsive « Dark Professional » : bleu nuit, bleu discret, cartes opaques et planète très atténuée.
 - Module « Mots de passe » : génération robuste et phrases françaises aléatoires, saisie manuelle avec estimation de force, copie, coffre chiffré local côté navigateur, clé de secours et avertissement de réutilisation.
 - **V0.4 — Trouver un site officiel :** répertoire local de **24 adresses (12 FR / 12 BE)** documentées avec source et date de revue, filtres pays, recherche tolérante aux accents et aux fautes, copie de l'URL. **Les mots-clés restent dans le navigateur ; aucun moteur de recherche n'est interrogé.**
-- **Tests hors ligne du HTML :** un snapshot réel de Wikipédia et des formulaires fictifs (phishing et connexion ordinaire) permettent de vérifier les faux positifs et les champs sensibles sans télécharger de pages pendant les tests.
+- **Tests hors ligne et reproductibles :** huit fixtures (quatre HTML, quatre messages FR/BE synthétiques), avec sources, SHA-256 et attentes dans [MANIFEST.json](backend/tests/fixtures/MANIFEST.json). Les exemples vérifient la détection et les faux positifs **sans authentifier un vrai SMS** ni exécuter JavaScript. Les constats de texte portent des identifiants/version stables.
 
 ## Sécurité et limites
 
@@ -79,7 +79,7 @@ Pour les consignes complètes de l'auditeur, voir [README-AUDIT-V0.4.md](README-
 - `backend/app/official_sites_frbe.json` — adresses de référence FR/BE et sources documentaires ; pas de requête réseau pour la recherche
 - `frontend/src/OfficialSitesDirectory.jsx` — page « Sites officiels » et copie de liens
 - `backend/tests/` — tests de non-régression et API du coffre
-- `backend/tests/fixtures/` — corpus HTML hors ligne documenté et attribué ; test du formulaire de recherche Wikipédia, formulaire fictif sensible, et formulaire ordinaire
+- `backend/tests/fixtures/` — corpus HTML/FR-BE organisé en `html/` et `messages/`, avec manifeste SHA-256 vérifié avant les tests
 - `frontend/src/passwordCrypto.js` et `PasswordManager.jsx` — chiffrement navigateur et interface du coffre
 - `frontend/tests/` — tests des fonctions WebCrypto
 - `data/` — historique SQLite, cache RDAP et journal local sans données personnelles, ignorés par Git

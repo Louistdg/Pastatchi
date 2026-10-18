@@ -1,0 +1,87 @@
+{
+  "schema_version": 1,
+  "frozen_on": "2026-10-19",
+  "scope": "Cas de régression qualitatifs, non représentatifs d'une mesure de précision",
+  "fixtures": [
+    {
+      "path": "html/wikipedia.html",
+      "type": "html",
+      "origin": "capture",
+      "source": "https://www.wikipedia.org/",
+      "bytes": 122197,
+      "sha256": "5c0de7d8a1af1dc8c06cc2a517265ff96db0ed11114a62be2625ed13c9cdb466",
+      "expected": "Page réelle figée : formulaire de recherche sans indice de phishing",
+      "expected_risk": "Faible"
+    },
+    {
+      "path": "html/faux-ameli.html",
+      "type": "html",
+      "origin": "synthetique",
+      "source": "Création interne PastaTshield",
+      "bytes": 1668,
+      "sha256": "b9455a804654a3484098a3adf3167a610469085edd2e198c87cc2c8c367d78e4",
+      "expected": "Simulation fictive de collecte sensible par formulaire HTTP",
+      "expected_risk": "Élevé"
+    },
+    {
+      "path": "html/formulaire-legitime.html",
+      "type": "html",
+      "origin": "synthetique",
+      "source": "Création interne PastaTshield",
+      "bytes": 714,
+      "sha256": "eaf58ca67dd6fc32f5606e2e246015feba5f6447e8065f610f11009cc530bca0",
+      "expected": "Formulaire HTTPS avec mot de passe sans signal d'usurpation",
+      "expected_risk": "Faible"
+    },
+    {
+      "path": "html/script-tiers.html",
+      "type": "html",
+      "origin": "synthetique",
+      "source": "Création interne PastaTshield",
+      "bytes": 506,
+      "sha256": "4df77b05f9aabd4e3acc16b7d3405d7d36094e6dc75b87d46de68731ebc52066",
+      "expected": "Référence script externe fictif ; chaîne eval non exécutée",
+      "expected_risk": "Faible"
+    },
+    {
+      "path": "messages/laposte-reference.txt",
+      "type": "message",
+      "origin": "synthetique",
+      "source": "Création interne PastaTshield",
+      "bytes": 177,
+      "sha256": "c84c4c34b9760ca9270b7c833ffc3bd115a881cf90b232a3152d4f70d63459b3",
+      "expected": "La Poste et adresse de référence, sans usurpation déduite",
+      "expected_risk": "Faible"
+    },
+    {
+      "path": "messages/itsme-reference.txt",
+      "type": "message",
+      "origin": "synthetique",
+      "source": "Création interne PastaTshield",
+      "bytes": 177,
+      "sha256": "5425f53d82967c04d2f3fbcb2da58525a6f81dd913317ddce3a05b3b0d9b3bf1",
+      "expected": "itsme et adresse de référence, sans usurpation déduite",
+      "expected_risk": "Faible"
+    },
+    {
+      "path": "messages/impots-usurpation.txt",
+      "type": "message",
+      "origin": "synthetique",
+      "source": "Création interne PastaTshield",
+      "bytes": 202,
+      "sha256": "26b3073896b207d576e405abd9cb9e58ff10cec1c081740b90626ba8353fa557",
+      "expected": "Imitation de domaine des impôts vers une adresse .example",
+      "expected_risk": "Élevé"
+    },
+    {
+      "path": "messages/bpost-usurpation.txt",
+      "type": "message",
+      "origin": "synthetique",
+      "source": "Création interne PastaTshield",
+      "bytes": 186,
+      "sha256": "813cf016650630f136c6586eeeb2af52a31dffb4a53b68a55945edc3da3c0577",
+      "expected": "Imitation bpost demandant un paiement, URL fictive .example",
+      "expected_risk": "Élevé"
+    }
+  ]
+}

@@ -1,0 +1,73 @@
+{
+  "version": "0.2",
+  "locale": [
+    "fr-FR",
+    "fr-BE"
+  ],
+  "rules": [
+    {
+      "id": "credential.otp",
+      "version": 1,
+      "severity": "Critique",
+      "title": "Demande de code confidentiel",
+      "pattern": "(?:envoyez|communiquez|transmettez|donnez|partagez|indiquez|répondez avec).{0,70}(?:code|otp|pin|itsme)|(?:code (?:reçu|de vérification)).{0,55}(?:envoy|commun|transmet)",
+      "reason": "Une demande de transmission d'un code temporaire peut permettre un accès frauduleux à un compte."
+    },
+    {
+      "id": "credential.bank",
+      "version": 1,
+      "severity": "Élevé",
+      "title": "Demande de données bancaires",
+      "pattern": "(?:communiquez|saisissez|envoyez|confirmez|renseignez|transmettez).{0,60}(?:numéro de carte|carte bancaire|cryptogramme|cvv|rib|iban)",
+      "reason": "Les coordonnées de paiement doivent être communiquées uniquement via des canaux officiels vérifiés."
+    },
+    {
+      "id": "credential.password",
+      "version": 1,
+      "severity": "Élevé",
+      "title": "Demande de mot de passe",
+      "pattern": "(?:confirmez|envoyez|saisissez|transmettez|communiquez).{0,45}(?:mot de passe|identifiant)",
+      "reason": "Un message demandant la saisie d'un mot de passe mérite une vérification indépendante."
+    },
+    {
+      "id": "psychology.urgency",
+      "version": 1,
+      "severity": "Modéré",
+      "title": "Pression temporelle",
+      "pattern": "(?:immédiatement|dans les 24\\s*h|sous 24\\s*h|dernier avertissement|urgent|sans délai|compte sera (?:fermé|bloqué|suspendu))",
+      "reason": "Les fraudeurs utilisent souvent l'urgence pour empêcher toute vérification."
+    },
+    {
+      "id": "psychology.threat",
+      "version": 1,
+      "severity": "Modéré",
+      "title": "Menace ou sanction",
+      "pattern": "(?:poursuites|blocage définitif|amende (?:impayée|majorée)|compte bloqué|compte suspendu)",
+      "reason": "Les annonces de sanction peuvent être utilisées pour pousser à agir rapidement."
+    },
+    {
+      "id": "psychology.reward",
+      "version": 1,
+      "severity": "Modéré",
+      "title": "Promesse de gain",
+      "pattern": "(?:vous avez gagné|gain garanti|rendement garanti|argent facile|remboursement exceptionnel)",
+      "reason": "Une promesse non sollicitée peut être un procédé d'escroquerie."
+    },
+    {
+      "id": "payment.unexpected",
+      "version": 1,
+      "severity": "Élevé",
+      "title": "Demande de paiement inhabituelle",
+      "pattern": "(?:payez|régularisez|réglez|paiement (?:immédiat|requis)|frais de (?:douane|dossier|livraison))",
+      "reason": "Une demande de paiement inattendue doit être confirmée directement auprès du service concerné."
+    },
+    {
+      "id": "device.remote_access",
+      "version": 1,
+      "severity": "Critique",
+      "title": "Prise de contrôle à distance",
+      "pattern": "(?:support|assistance|technicien|microsoft|apple).{0,100}(?:anydesk|teamviewer|accès à distance|contrôle de votre ordinateur|installer un logiciel)",
+      "reason": "Un interlocuteur inattendu demandant l'accès à l'appareil présente un risque important."
+    }
+  ]
+}

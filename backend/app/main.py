@@ -9,7 +9,7 @@ from collections import defaultdict, deque
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
@@ -167,6 +167,15 @@ def history_clear():
 DIST = ROOT / "frontend" / "dist"
 if (DIST / "assets").exists():
     app.mount("/assets", StaticFiles(directory=DIST / "assets"), name="assets")
+
+@app.get("/favicon.svg", response_class=FileResponse)
+def favicon():
+    """Icône officielle chargée localement (pas d'appel tiers)."""
+    path = DIST / "favicon.svg"
+    if not path.exists():
+        raise HTTPException(status_code=404, detail="Favicon non compilé.")
+    return FileResponse(path, media_type="image/svg+xml")
+
 
 @app.get("/", response_class=HTMLResponse)
 def homepage():

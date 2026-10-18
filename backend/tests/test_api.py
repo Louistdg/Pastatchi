@@ -44,6 +44,12 @@ class LocalApiTests(unittest.TestCase):
         res = self.client.post("/api/v1/analyze/text", content=body, headers=self.headers)
         self.assertEqual(res.status_code, 200, res.text[:300])
 
+    def test_favicon_t_shield_is_served_without_api_token(self):
+        response = self.client.get("/favicon.svg")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("image/svg+xml", response.headers["content-type"])
+        self.assertIn(b"T-Bouclier", response.content)
+
     def test_unauthorized_and_host_blocked(self):
         self.assertEqual(self.client.get("/api/v1/health").status_code, 403)
         r = self.client.get("/api/v1/health", headers={**self.headers, "Origin": "https://bad.example"})

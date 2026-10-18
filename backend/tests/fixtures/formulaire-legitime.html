@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="fr">
+<head><meta charset="utf-8"><title>Exemple fictif : espace personnel légitime</title></head>
+<body>
+  <!-- Fixture hors ligne : présence de champs sensibles sans preuve de phishing. -->
+  <main>
+    <h1>Portail de démonstration fictif</h1>
+    <form action="https://compte.example.invalid/connexion" method="post">
+      <label for="user">Adresse e-mail</label>
+      <input type="email" id="user" name="email" autocomplete="username">
+      <label for="secret">Mot de passe</label>
+      <input type="password" id="secret" name="password" autocomplete="current-password">
+      <button type="submit" disabled>Simulation seulement</button>
+    </form>
+  </main>
+</body>
+</html>

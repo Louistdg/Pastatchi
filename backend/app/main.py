@@ -8,7 +8,7 @@ import time
 from collections import defaultdict, deque
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException, Request, Query
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
@@ -18,6 +18,7 @@ from .urlscan import analyze_url, normalize_target, RDAP_CACHE
 from .security_log import security_event
 from .storage import HistoryStore
 from .vault import VaultStore
+from .official_sites import search_official_sites
 
 ROOT = Path(__file__).resolve().parents[2]
 VERSION = json.loads((ROOT / "version.json").read_text(encoding="utf-8"))["version"]
@@ -118,6 +119,16 @@ def vault_write(payload: VaultPayload):
 def vault_delete():
     vault_store.clear()
     return {"deleted": True}
+
+
+@app.get("/api/v1/official-sites")
+def official_sites(q: str = Query(default="", max_length=80),
+                   country: str = Query(default="", max_length=16)):
+    """Recherche en fichier local sans sortie réseau ; l'UI charge une seule fois."""
+    try:
+        return search_official_sites(q, country=country)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
 
 
 @app.get("/api/v1/health")

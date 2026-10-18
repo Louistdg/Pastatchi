@@ -1,7 +1,7 @@
 {
   "name": "pastatshield",
   "private": true,
-  "version": "0.3.0",
+  "version": "0.4.0",
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "format": "prettier --write src",
     "test:crypto": "node --test tests/crypto.test.mjs",
-    "test:style": "node --test tests/style.test.mjs"
+    "test:style": "node --test tests/style.test.mjs",
+    "test:directory": "node --test tests/officialSites.test.mjs"
   },
   "dependencies": {
     "@fontsource/jetbrains-mono": "^5.3.0",

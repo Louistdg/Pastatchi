@@ -1,6 +1,6 @@
 # Pastatchi — PastaTshield
 
-**PastaTshield V0.3 (prototype local)** — « Un doute ? On vérifie. »
+**PastaTshield V0.4 (prototype local)** — « Un doute ? On vérifie. »
 
 **Pour une revue indépendante :** commencez par [README-AUDIT.md](README-AUDIT.md) et [THREAT_MODEL.md](THREAT_MODEL.md). Les contrôles existants ne constituent pas une certification.
 
@@ -17,6 +17,7 @@ Application web responsive de prévention des arnaques FR/BE, exécutée sur la 
 - Parcours élémentaire « J'ai déjà répondu » et conseils adaptés à la France et à la Belgique.
 - Interface React responsive « Dark Professional » : bleu nuit, bleu discret, cartes opaques et planète très atténuée.
 - Module « Mots de passe » : génération robuste et phrases françaises aléatoires, saisie manuelle avec estimation de force, copie, coffre chiffré local côté navigateur, clé de secours et avertissement de réutilisation.
+- **V0.4 — Trouver un site officiel :** répertoire local de **24 adresses (12 FR / 12 BE)** documentées avec source et date de revue, filtres pays, recherche tolérante aux accents et aux fautes, copie de l'URL. **Les mots-clés restent dans le navigateur ; aucun moteur de recherche n'est interrogé.**
 
 ## Sécurité et limites
 
@@ -26,7 +27,8 @@ Application web responsive de prévention des arnaques FR/BE, exécutée sur la 
 - Aucun script JavaScript du site n'est exécuté, aucune sous-ressource n'est chargée. Les scripts et traceurs mentionnés sont **référencés** par le HTML, pas prouvés comme exécutés.
 - Une connexion TLS réussie ne prouve pas qu'un commerce est fiable ; les contrôles texte ne prouvent pas l'identité d'un expéditeur.
 - **VirusTotal, Google Safe Browsing et les autres moteurs tiers ne sont pas encore connectés.** Leur vérification est indiquée « non vérifié ». Pas d'IA externe.
-- Pas d'OCR ni d'analyse de fichiers, appels automatiques ou surveillance permanente en V0.3.
+- Pas d'OCR ni d'analyse de fichiers, appels automatiques ou surveillance permanente en V0.4.
+- **Le répertoire n'est pas un certificat :** les domaines y sont recensés à la date indiquée, sans vérification en temps réel. Leur présence ne garantit ni la sécurité du site ni l'authenticité d'un message usurpant son identité. Cliquer sur « Source » ouvre volontairement un site externe.
 - Le coffre est **expérimental** : les secrets sont chiffrés en AES-GCM dans le navigateur avant leur stockage SQLite. La phrase maître n'est pas transmise au backend. La clé de secours sert à ouvrir le fichier chiffré existant, **pas à récupérer une base supprimée**.
 - Le coffre n'a pas encore été audité ; évitez d'y déposer des secrets irremplaçables sans sauvegarde adaptée. Pas de cloud, pas d'import/export, pas de remplissage automatique ni d'extension.
 - Presse-papiers : l'effacement après 60 secondes est seulement tenté quand le navigateur l'autorise ; l'historique système peut conserver une copie.
@@ -58,7 +60,9 @@ Depuis la racine du dépôt (environnement de développement) :
  .\\backend\\.venv\\Scripts\\python.exe -m pip install -r backend\\requirements-dev.txt
  .\\backend\\.venv\\Scripts\\python.exe -m unittest discover -s backend/tests -v
  cd frontend
- node --test tests/crypto.test.mjs
+ npm run test:crypto
+ npm run test:style
+ npm run test:directory
 ```
 
 ## Répertoire
@@ -66,6 +70,8 @@ Depuis la racine du dépôt (environnement de développement) :
 - `frontend/` — interface React/Vite
 - `backend/app/` — API, règles de messages, inspection URL, historique
 - `backend/app/rules_frbe.json` — règles d'analyse versionnées
+- `backend/app/official_sites_frbe.json` — adresses de référence FR/BE et sources documentaires ; pas de requête réseau pour la recherche
+- `frontend/src/OfficialSitesDirectory.jsx` — page « Sites officiels » et copie de liens
 - `backend/tests/` — tests de non-régression et API du coffre
 - `frontend/src/passwordCrypto.js` et `PasswordManager.jsx` — chiffrement navigateur et interface du coffre
 - `frontend/tests/` — tests des fonctions WebCrypto
@@ -74,7 +80,7 @@ Depuis la racine du dépôt (environnement de développement) :
 
 **Guide de style officiel :** [`PastaTshield_Guide_Style_v1.2.md`](PastaTshield_Guide_Style_v1.2.md). Logo T-Bouclier, palette sémantique et typographie locale : `frontend/src/design-system.css`.
 
-Voir `PastaTshield_Architecture_V0.3.md` pour les décisions, écarts à la proposition initiale, limites et évolutions. L'architecture 0.2.1 reste conservée à titre historique.
+Voir `PastaTshield_Architecture_V0.4.md` pour le répertoire local et ses limites ; `PastaTshield_Architecture_V0.3.md` documente le coffre et les choix antérieurs. L'architecture 0.2.1 reste conservée à titre historique.
 
 ## Lancement rapide
 

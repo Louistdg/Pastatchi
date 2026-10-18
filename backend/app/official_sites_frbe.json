@@ -1,0 +1,430 @@
+{
+  "version": "1.0",
+  "reviewed_on": "2026-10-18",
+  "review_method": "Adresses recoupées avec les pages des éditeurs ou des portails publics ; aucune surveillance en temps réel.",
+  "sites": [
+    {
+      "id": "service-public",
+      "country": "France",
+      "category": "Démarches",
+      "name": "Service-Public.fr",
+      "url": "https://www.service-public.gouv.fr",
+      "keywords": [
+        "demarches",
+        "service public",
+        "administration",
+        "droits",
+        "acte naissance",
+        "papiers"
+      ],
+      "description": "Informations officielles sur les droits et les démarches administratives.",
+      "source_url": "https://www.service-public.gouv.fr/"
+    },
+    {
+      "id": "impots",
+      "country": "France",
+      "category": "Impôts",
+      "name": "Impôts (DGFiP)",
+      "url": "https://www.impots.gouv.fr",
+      "keywords": [
+        "impot",
+        "impots",
+        "fisc",
+        "taxe",
+        "dgfip",
+        "finances publiques",
+        "déclaration"
+      ],
+      "description": "Déclarations fiscales, avis et démarches auprès des finances publiques.",
+      "source_url": "https://www.impots.gouv.fr/particulier"
+    },
+    {
+      "id": "ameli",
+      "country": "France",
+      "category": "Santé",
+      "name": "Ameli — Assurance Maladie",
+      "url": "https://www.ameli.fr",
+      "keywords": [
+        "ameli",
+        "assurance maladie",
+        "cpam",
+        "sécu",
+        "secu",
+        "sécurité sociale",
+        "carte vitale",
+        "remboursement"
+      ],
+      "description": "Informations de l'Assurance Maladie et accès aux services de santé.",
+      "source_url": "https://www.ameli.fr/assure/remboursements/suivre-remboursements/compte-ameli-connexion-services"
+    },
+    {
+      "id": "caf",
+      "country": "France",
+      "category": "Aides",
+      "name": "CAF — Allocations familiales",
+      "url": "https://www.caf.fr",
+      "keywords": [
+        "caf",
+        "allocations",
+        "rsa",
+        "apl",
+        "aide au logement",
+        "famille",
+        "prime activité"
+      ],
+      "description": "Informations, prestations et démarches de la Caisse d'allocations familiales.",
+      "source_url": "https://www.caf.fr/"
+    },
+    {
+      "id": "france-travail",
+      "country": "France",
+      "category": "Emploi",
+      "name": "France Travail",
+      "url": "https://www.francetravail.fr",
+      "keywords": [
+        "france travail",
+        "pole emploi",
+        "pôle emploi",
+        "chomage",
+        "chômage",
+        "emploi",
+        "allocation"
+      ],
+      "description": "Inscription, emploi, accompagnement et allocations.",
+      "source_url": "https://www.francetravail.fr/accueil/"
+    },
+    {
+      "id": "laposte",
+      "country": "France",
+      "category": "Colis",
+      "name": "La Poste",
+      "url": "https://www.laposte.fr",
+      "keywords": [
+        "poste",
+        "la poste",
+        "laposte",
+        "courrier",
+        "colis",
+        "timbre",
+        "livraison",
+        "reexpedition"
+      ],
+      "description": "Services postaux, courrier et livraison de colis.",
+      "source_url": "https://www.laposte.fr/"
+    },
+    {
+      "id": "colissimo",
+      "country": "France",
+      "category": "Colis",
+      "name": "Colissimo — La Poste",
+      "url": "https://www.laposte.fr/colissimo",
+      "keywords": [
+        "colissimo",
+        "suivi colis",
+        "livraison",
+        "transport",
+        "suivre un colis"
+      ],
+      "description": "Informations et suivi des colis Colissimo depuis La Poste.",
+      "source_url": "https://www.laposte.fr/colissimo"
+    },
+    {
+      "id": "franceconnect",
+      "country": "France",
+      "category": "Identité",
+      "name": "FranceConnect",
+      "url": "https://www.franceconnect.gouv.fr",
+      "keywords": [
+        "franceconnect",
+        "france connect",
+        "authentification",
+        "connexion",
+        "identité numérique"
+      ],
+      "description": "Informations sur le service d'identification pour les démarches françaises.",
+      "source_url": "https://www.franceconnect.gouv.fr/"
+    },
+    {
+      "id": "assurance-retraite",
+      "country": "France",
+      "category": "Retraite",
+      "name": "L'Assurance retraite",
+      "url": "https://www.lassuranceretraite.fr",
+      "keywords": [
+        "retraite",
+        "assurance retraite",
+        "carsat",
+        "pension",
+        "cnav",
+        "reversion",
+        "réversion"
+      ],
+      "description": "Droits, retraite et démarches de la Sécurité sociale française.",
+      "source_url": "https://www.lassuranceretraite.fr/"
+    },
+    {
+      "id": "mon-compte-formation",
+      "country": "France",
+      "category": "Emploi",
+      "name": "Mon Compte Formation",
+      "url": "https://www.moncompteformation.gouv.fr",
+      "keywords": [
+        "cpf",
+        "formation",
+        "mon compte formation",
+        "droit formation",
+        "compte personnel"
+      ],
+      "description": "Accès au service public des droits à la formation professionnelle.",
+      "source_url": "https://www.moncompteformation.gouv.fr/"
+    },
+    {
+      "id": "cybermalveillance",
+      "country": "France",
+      "category": "Aide",
+      "name": "Cybermalveillance.gouv.fr",
+      "url": "https://www.cybermalveillance.gouv.fr",
+      "keywords": [
+        "cybermalveillance",
+        "piratage",
+        "arnaque",
+        "escroquerie",
+        "hameçonnage",
+        "phishing",
+        "plainte"
+      ],
+      "description": "Conseils et assistance aux victimes de cybermalveillance.",
+      "source_url": "https://www.cybermalveillance.gouv.fr/"
+    },
+    {
+      "id": "france-titres",
+      "country": "France",
+      "category": "Identité",
+      "name": "France Titres (ANTS)",
+      "url": "https://cni-passeport.ants.gouv.fr",
+      "keywords": [
+        "ants",
+        "france titres",
+        "passeport",
+        "carte identité",
+        "cni",
+        "permis conduire",
+        "immatriculation",
+        "carte grise"
+      ],
+      "description": "Démarches concernant les titres d'identité et documents sécurisés.",
+      "source_url": "https://cni-passeport.ants.gouv.fr/"
+    },
+    {
+      "id": "belgium",
+      "country": "Belgique",
+      "category": "Démarches",
+      "name": "Belgium.be",
+      "url": "https://www.belgium.be/fr",
+      "keywords": [
+        "belgium",
+        "belgique",
+        "service public",
+        "administration",
+        "gouvernement",
+        "demarches",
+        "démarches"
+      ],
+      "description": "Portail des informations et services officiels de l'État belge.",
+      "source_url": "https://www.belgium.be/fr"
+    },
+    {
+      "id": "myminfin",
+      "country": "Belgique",
+      "category": "Impôts",
+      "name": "MyMinfin — Impôts belges",
+      "url": "https://www.myminfin.be",
+      "keywords": [
+        "myminfin",
+        "minfin",
+        "impots",
+        "impôts",
+        "fisc",
+        "declaration",
+        "déclaration",
+        "taxonweb",
+        "finances"
+      ],
+      "description": "Dossier fiscal et services électroniques du SPF Finances.",
+      "source_url": "https://www.belgium.be/fr/services_en_ligne/app_my_minfin"
+    },
+    {
+      "id": "spf-finances",
+      "country": "Belgique",
+      "category": "Impôts",
+      "name": "SPF Finances",
+      "url": "https://finances.belgium.be/fr",
+      "keywords": [
+        "spf finances",
+        "taxes",
+        "finances",
+        "fiscalité",
+        "revenus",
+        "déclaration"
+      ],
+      "description": "Informations officielles de l'administration fiscale fédérale.",
+      "source_url": "https://finances.belgium.be/fr"
+    },
+    {
+      "id": "itsme",
+      "country": "Belgique",
+      "category": "Identité",
+      "name": "itsme®",
+      "url": "https://www.itsme-id.com/fr-be/",
+      "keywords": [
+        "itsme",
+        "identité",
+        "identite",
+        "authentification",
+        "connexion",
+        "application"
+      ],
+      "description": "Informations sur le service d'identité numérique itsme.",
+      "source_url": "https://www.itsme-id.com/fr-be/"
+    },
+    {
+      "id": "bpost",
+      "country": "Belgique",
+      "category": "Colis",
+      "name": "bpost",
+      "url": "https://www.bpost.be/fr",
+      "keywords": [
+        "bpost",
+        "poste belge",
+        "colis",
+        "suivi",
+        "livraison",
+        "track trace",
+        "facteur"
+      ],
+      "description": "Courrier et colis en Belgique ; prudence avec les demandes de paiement reçues.",
+      "source_url": "https://www.bpost.be/fr/phishing"
+    },
+    {
+      "id": "mypension",
+      "country": "Belgique",
+      "category": "Retraite",
+      "name": "mypension.be",
+      "url": "https://www.mypension.be",
+      "keywords": [
+        "mypension",
+        "my pension",
+        "pension",
+        "retraite",
+        "service pensions",
+        "carrière"
+      ],
+      "description": "Informations et démarches relatives à la pension légale belge.",
+      "source_url": "https://www.belgium.be/fr/services_en_ligne/app_mypension"
+    },
+    {
+      "id": "ebox",
+      "country": "Belgique",
+      "category": "Démarches",
+      "name": "eBox — Boîte aux lettres officielle",
+      "url": "https://myebox.be",
+      "keywords": [
+        "ebox",
+        "e-box",
+        "myebox",
+        "courrier administration",
+        "boîte aux lettres",
+        "document"
+      ],
+      "description": "Boîte électronique pour les documents et courriers d'administrations belges.",
+      "source_url": "https://myebox.be/"
+    },
+    {
+      "id": "myhealth",
+      "country": "Belgique",
+      "category": "Santé",
+      "name": "MaSanté / MyHealth",
+      "url": "https://www.myhealth.belgium.be/fr",
+      "keywords": [
+        "masante",
+        "ma santé",
+        "myhealth",
+        "sante",
+        "santé",
+        "vaccins",
+        "médicaments",
+        "ordonnance"
+      ],
+      "description": "Portail pour consulter des informations et documents de santé personnels.",
+      "source_url": "https://www.belgium.be/fr/services_en_ligne/masante"
+    },
+    {
+      "id": "onem",
+      "country": "Belgique",
+      "category": "Emploi",
+      "name": "ONEM — Office national de l'emploi",
+      "url": "https://www.onem.be",
+      "keywords": [
+        "onem",
+        "chômage",
+        "chomage",
+        "emploi",
+        "allocation",
+        "interruption carrière"
+      ],
+      "description": "Informations sur le chômage et les prestations relevant de l'ONEM.",
+      "source_url": "https://www.onem.be/"
+    },
+    {
+      "id": "police",
+      "country": "Belgique",
+      "category": "Aide",
+      "name": "Police belge",
+      "url": "https://www.police.be/fr",
+      "keywords": [
+        "police",
+        "plainte",
+        "vol",
+        "arnaque",
+        "escroquerie",
+        "signalement"
+      ],
+      "description": "Portail de la Police intégrée belge.",
+      "source_url": "https://www.police.be/fr"
+    },
+    {
+      "id": "securite-sociale-belge",
+      "country": "Belgique",
+      "category": "Aides",
+      "name": "Sécurité sociale belge",
+      "url": "https://www.socialsecurity.be",
+      "keywords": [
+        "securite sociale",
+        "sécurité sociale",
+        "socialsecurity",
+        "cotisations",
+        "allocations",
+        "prestations"
+      ],
+      "description": "Informations et services de la sécurité sociale pour citoyens et entreprises.",
+      "source_url": "https://www.socialsecurity.be/"
+    },
+    {
+      "id": "ehealth",
+      "country": "Belgique",
+      "category": "Santé",
+      "name": "eHealth — Santé électronique",
+      "url": "https://www.ehealth.fgov.be",
+      "keywords": [
+        "ehealth",
+        "santé",
+        "sante",
+        "soins",
+        "plateforme santé",
+        "e-sante"
+      ],
+      "description": "Plateforme fédérale belge de services électroniques de santé.",
+      "source_url": "https://www.ehealth.fgov.be/"
+    }
+  ]
+}

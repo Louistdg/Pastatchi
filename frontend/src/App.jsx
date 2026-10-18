@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import PRODUCT from "../../version.json";
 import PasswordManager from "./PasswordManager.jsx";
+import OfficialSitesDirectory from "./OfficialSitesDirectory.jsx";
 import TShieldIcon from "./TShieldIcon.jsx";
 const VERSION = PRODUCT.version;
 import {
@@ -47,6 +48,7 @@ const MENU = [
   { key: "analyze", label: "Analyser", icon: Search },
   { key: "history", label: "Historique", icon: Clock3 },
   { key: "protection", label: "Protection", icon: ShieldCheck },
+  { key: "official-sites", label: "Sites officiels", icon: Globe2 },
   { key: "passwords", label: "Mots de passe", icon: KeyRound },
   { key: "advice", label: "Conseils", icon: BookOpen },
   { key: "settings", label: "Paramètres", icon: Settings },
@@ -920,6 +922,26 @@ function App() {
                 <ModuleCard key={m.label} module={m} onLaunch={launch} />
               ))}
             </div>
+            <section className="official-home-promo glass">
+              <div className="official-home-promo-icon">
+                <Globe2 size={24} aria-hidden="true" />
+              </div>
+              <div>
+                <h2>Besoin du vrai site d’un organisme ?</h2>
+                <p>
+                  Impôts, Ameli, colis, itsme… retrouve une adresse de référence
+                  dans notre répertoire local.
+                </p>
+              </div>
+              <button
+                type="button"
+                className="outline-action"
+                onClick={() => navigate("official-sites")}
+              >
+                Trouver un site officiel{" "}
+                <ArrowRight size={17} aria-hidden="true" />
+              </button>
+            </section>
             <div
               className={
                 "content-grid " + (!history.length ? "history-empty" : "")
@@ -1316,6 +1338,7 @@ function App() {
           </div>
         )}
         {page === "passwords" && <PasswordManager api={api} />}
+        {page === "official-sites" && <OfficialSitesDirectory api={api} />}
         {page === "settings" && (
           <div className="page-body">
             <div className="page-heading">

@@ -8,6 +8,14 @@
 - [ ] **Cas de figures particuliers** : textes longs, messages d'erreur, langues et accents, listes de domaines et mots de passe sur écrans étroits.
 - [ ] **Couleurs sémantiques** : ne jamais représenter un risque uniquement par une couleur ; éviter tout message « sûr » absolu pour un verdict faible.
 
+## Maintenance du nouveau répertoire de sites (V0.4)
+
+- [ ] Programmer une revue documentaire régulière des **24 adresses FR/BE** (fonctionnement, domaine, changement de propriétaire, redirections, source officielle).
+- [ ] Définir un processus de retrait rapide d'une adresse douteuse et de publication/mise à jour des listes **sans téléchargement arbitraire ni affaiblissement des consentements**.
+- [ ] Élargir après vérification aux banques, mutuelles et opérateurs courants, en évitant les homonymes et les URLs non confirmées.
+- [ ] Faire tester la recherche avec des seniors, y compris les fautes d'orthographe, l'annonce des suggestions et la visibilité des avertissements.
+- [ ] Mettre en place une revue de sécurité différentielle du répertoire V0.4 : validation des sources, comportements des liens, UI/XSS et URL présentées.
+
 ## Priorités de sécurité inchangées avant diffusion publique
 
 - [ ] Faire réaliser l'audit indépendant du frontend (XSS/CSP/secret en mémoire), de l'API locale et des vérifications URL/SSRF.

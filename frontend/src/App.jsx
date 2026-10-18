@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import PRODUCT from "../../version.json";
+import PasswordManager from "./PasswordManager.jsx";
 const VERSION = PRODUCT.version;
 import {
   Activity,
@@ -23,6 +24,7 @@ import {
   Info,
   Link2,
   LockKeyhole,
+  KeyRound,
   Mail,
   Menu,
   MessageCircle,
@@ -44,6 +46,7 @@ const MENU = [
   { key: "analyze", label: "Analyser", icon: Search },
   { key: "history", label: "Historique", icon: Clock3 },
   { key: "protection", label: "Protection", icon: ShieldCheck },
+  { key: "passwords", label: "Mots de passe", icon: KeyRound },
   { key: "advice", label: "Conseils", icon: BookOpen },
   { key: "settings", label: "Paramètres", icon: Settings },
 ];
@@ -1306,6 +1309,7 @@ function App() {
             </button>
           </div>
         )}
+        {page === "passwords" && <PasswordManager api={api} />}
         {page === "settings" && (
           <div className="page-body">
             <div className="page-heading">

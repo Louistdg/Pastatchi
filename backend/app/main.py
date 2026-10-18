@@ -17,10 +17,12 @@ from .analyzer import analyze_text
 from .urlscan import analyze_url, normalize_target, RDAP_CACHE
 from .security_log import security_event
 from .storage import HistoryStore
+from .vault import VaultStore
 
 ROOT = Path(__file__).resolve().parents[2]
 VERSION = json.loads((ROOT / "version.json").read_text(encoding="utf-8"))["version"]
 store = HistoryStore(ROOT / "data" / "history.sqlite3")
+vault_store = VaultStore(ROOT / "data" / "vault.sqlite3")
 TOKEN = secrets.token_urlsafe(32)
 CSP_NONCE = secrets.token_urlsafe(16)
 ACCESS_TIMES = defaultdict(deque)
@@ -93,6 +95,30 @@ class UrlRequest(BaseModel):
     mode: str = "renforce"
     keep_content: bool = False
     external_consent: bool = False
+
+class VaultPayload(BaseModel):
+    envelope: dict
+    revision: int | None = None
+
+
+@app.get("/api/v1/vault")
+def vault_read():
+    return vault_store.read()
+
+
+@app.put("/api/v1/vault")
+def vault_write(payload: VaultPayload):
+    try:
+        return vault_store.write(payload.envelope, payload.revision)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+
+@app.delete("/api/v1/vault")
+def vault_delete():
+    vault_store.clear()
+    return {"deleted": True}
+
 
 @app.get("/api/v1/health")
 def health():

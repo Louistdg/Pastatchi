@@ -1,6 +1,6 @@
 # Pastatchi — PastaTshield
 
-**PastaTshield V0.2.1 (prototype local)** — « Un doute ? On vérifie. »
+**PastaTshield V0.3 (prototype local)** — « Un doute ? On vérifie. »
 
 Application web responsive de prévention des arnaques FR/BE, exécutée sur la machine de l'utilisateur.
 
@@ -13,7 +13,8 @@ Application web responsive de prévention des arnaques FR/BE, exécutée sur la 
 - Rapports sans pourcentage inventé : niveau textuel, indicateurs, recommandations, contrôles, sources, limites, vue simple/détaillée, copie texte.
 - Historique SQLite local : résumé uniquement par défaut ; conservation du contenu seulement sur demande ; effacement de l'historique et du cache RDAP.
 - Parcours élémentaire « J'ai déjà répondu » et conseils adaptés à la France et à la Belgique.
-- Interface React, style bleu/violet sombre et planète, responsive.
+- Interface React responsive « Dark Professional » : bleu nuit, bleu discret, cartes opaques et planète très atténuée.
+- Module « Mots de passe » : génération robuste et phrases françaises aléatoires, saisie manuelle avec estimation de force, copie, coffre chiffré local côté navigateur, clé de secours et avertissement de réutilisation.
 
 ## Sécurité et limites
 
@@ -23,7 +24,10 @@ Application web responsive de prévention des arnaques FR/BE, exécutée sur la 
 - Aucun script JavaScript du site n'est exécuté, aucune sous-ressource n'est chargée. Les scripts et traceurs mentionnés sont **référencés** par le HTML, pas prouvés comme exécutés.
 - Une connexion TLS réussie ne prouve pas qu'un commerce est fiable ; les contrôles texte ne prouvent pas l'identité d'un expéditeur.
 - **VirusTotal, Google Safe Browsing et les autres moteurs tiers ne sont pas encore connectés.** Leur vérification est indiquée « non vérifié ». Pas d'IA externe.
-- Pas d'OCR ni d'analyse de fichiers, appels automatiques ou surveillance permanente en V0.2.1.
+- Pas d'OCR ni d'analyse de fichiers, appels automatiques ou surveillance permanente en V0.3.
+- Le coffre est **expérimental** : les secrets sont chiffrés en AES-GCM dans le navigateur avant leur stockage SQLite. La phrase maître n'est pas transmise au backend. La clé de secours sert à ouvrir le fichier chiffré existant, **pas à récupérer une base supprimée**.
+- Le coffre n'a pas encore été audité ; évitez d'y déposer des secrets irremplaçables sans sauvegarde adaptée. Pas de cloud, pas d'import/export, pas de remplissage automatique ni d'extension.
+- Presse-papiers : l'effacement après 60 secondes est seulement tenté quand le navigateur l'autorise ; l'historique système peut conserver une copie.
 - Le module d'analyse URL est une fonctionnalité **expérimentale**, sans audit de sécurité indépendant ; aucune promesse de protection totale.
 - Les URL sensibles peuvent contenir des paramètres : ne les saisissez pas si vous ne souhaitez pas transmettre l'URL au site distant.
 
@@ -51,6 +55,8 @@ Depuis la racine du dépôt (environnement de développement) :
 ```powershell
  .\\backend\\.venv\\Scripts\\python.exe -m pip install -r backend\\requirements-dev.txt
  .\\backend\\.venv\\Scripts\\python.exe -m unittest discover -s backend/tests -v
+ cd frontend
+ node --test tests/crypto.test.mjs
 ```
 
 ## Répertoire
@@ -58,11 +64,13 @@ Depuis la racine du dépôt (environnement de développement) :
 - `frontend/` — interface React/Vite
 - `backend/app/` — API, règles de messages, inspection URL, historique
 - `backend/app/rules_frbe.json` — règles d'analyse versionnées
-- `backend/tests/` — tests de non-régression
+- `backend/tests/` — tests de non-régression et API du coffre
+- `frontend/src/passwordCrypto.js` et `PasswordManager.jsx` — chiffrement navigateur et interface du coffre
+- `frontend/tests/` — tests des fonctions WebCrypto
 - `data/` — historique SQLite, cache RDAP et journal local sans données personnelles, ignorés par Git
 - `version.json` — version produit unique (backend et frontend)
 
-Voir `PastaTshield_Architecture_V0.2.1.md` pour les décisions, limites et évolutions.
+Voir `PastaTshield_Architecture_V0.3.md` pour les décisions, écarts à la proposition initiale, limites et évolutions. L'architecture 0.2.1 reste conservée à titre historique.
 
 ## Lancement rapide
 

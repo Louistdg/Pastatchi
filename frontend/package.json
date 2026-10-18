@@ -1,15 +1,17 @@
 {
   "name": "pastatshield",
   "private": true,
-  "version": "0.2.1",
+  "version": "0.3.0",
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
     "build": "vite build",
     "preview": "vite preview",
-    "format": "prettier --write src"
+    "format": "prettier --write src",
+    "test:crypto": "node --test tests/crypto.test.mjs"
   },
   "dependencies": {
+    "@scure/bip39": "^2.4.0",
     "lucide-react": "^0.468.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"

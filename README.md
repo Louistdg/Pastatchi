@@ -55,16 +55,23 @@ Ouvrez ensuite **http://127.0.0.1:8000/** sur le même ordinateur. Arrêt : `Ctr
 
 ## Tests
 
-Depuis la racine du dépôt (environnement de développement) :
+Depuis la racine du dépôt (sur une installation de développement). **Compiler le frontend avant les tests backend :** le test du favicon dépend du dossier `frontend/dist/`.
 
 ```powershell
- .\\backend\\.venv\\Scripts\\python.exe -m pip install -r backend\\requirements-dev.txt
- .\\backend\\.venv\\Scripts\\python.exe -m unittest discover -s backend/tests -v
- cd frontend
- npm run test:crypto
- npm run test:style
- npm run test:directory
+cd frontend
+npm ci
+npm run build
+npm run test:crypto
+npm run test:style
+npm run test:directory
+cd ..
+
+py -3.14 -m venv backend\.venv
+.\backend\.venv\Scripts\python.exe -m pip install -r backend\requirements-dev.txt
+.\backend\.venv\Scripts\python.exe -m unittest discover -s backend\tests -q
 ```
+
+Pour les consignes complètes de l'auditeur, voir [README-AUDIT-V0.4.md](README-AUDIT-V0.4.md).
 
 ## Répertoire
 

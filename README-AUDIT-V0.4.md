@@ -55,22 +55,24 @@ Les modifications de V0.4 sont **non auditées indépendamment**. Le fait que le
 
 ## 5. Commandes pour reproduction sur Windows
 
-Avec Python 3.14, Node 24 et npm, depuis le ZIP décompressé et **sans aucune base d'utilisateur** :
+Avec Python 3.14, Node 24 et npm, depuis le ZIP décompressé et **sans aucune base d'utilisateur**.
+
+**Ordre indispensable : compiler d'abord le frontend.** Le test d'intégration du favicon (`GET /favicon.svg`) dépend de `frontend/dist/`, qui n'est pas livré dans le ZIP source :
 
 ```powershell
+cd frontend
+npm ci
+npm run build
+npm run test:directory
+npm run test:style
+npm run test:crypto
+npm audit --omit=dev --audit-level=high
+cd ..
+
 py -3.14 -m venv backend\.venv
 .\backend\.venv\Scripts\python.exe -m pip install -r backend\requirements-dev.txt
 .\backend\.venv\Scripts\python.exe -m unittest discover -s backend\tests -q
 .\backend\.venv\Scripts\ruff.exe check backend\app backend\tests --select E4,E7,E9,F
-
-cd frontend
-npm ci
-npm run test:directory
-npm run test:style
-npm run test:crypto
-npm run build
-npm audit --omit=dev --audit-level=high
-cd ..
 ```
 
 Lancer localement uniquement si le laboratoire est isolé et sans données personnelles :

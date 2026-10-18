@@ -1,5 +1,5 @@
 /*
- * PastaTshield — Design System v1.1 (18 octobre 2026) : lisibilité et contrastes.
+ * PastaTshield — Design System v1.2 (18 octobre 2026) : Lexend et statuts lisibles.
  * Source de vérité visuelle : guide Dark Professional fourni par le propriétaire.
  * Chargé APRÈS les règles historiques pour les remplacer sans régression métier.
  * Les nouvelles fonctionnalités doivent employer ces jetons, sans nouveaux glows.
@@ -15,12 +15,16 @@
   --pts-success: #10b981;
   --pts-danger: #ef4444;
   --pts-warning: #f59e0b;
+  /* Textes de statut contrastés sur fonds foncés (icônes et bordures gardent les couleurs de base). */
+  --pts-success-text: #34d399;
+  --pts-danger-text: #f87171;
+  --pts-warning-text: #fbbf24;
   --pts-heading: #f4f7fb;
   --pts-text: #e6ecf5;
   --pts-muted: #b7c4d6;
   --pts-disabled: #9aa9bd;
-  --pts-font-body: "Atkinson Hyperlegible Next", "Segoe UI", sans-serif;
-  --pts-font-heading: "Atkinson Hyperlegible Next", "Segoe UI", sans-serif;
+  --pts-font-body: "Lexend", "Segoe UI", sans-serif;
+  --pts-font-heading: "Lexend", "Segoe UI", sans-serif;
   --pts-font-mono: "JetBrains Mono", Consolas, monospace;
   --pts-card-padding: 24px;
   --pts-card-gap: 24px;
@@ -55,10 +59,7 @@ body,
 .app-shell .analyze-top {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) !important;
 }
-.app-shell :focus-visible {
-  outline: 3px solid #93c5fd !important;
-  outline-offset: 3px;
-}
+
 .app-shell .space-stars {
   opacity: 0.1 !important;
 }
@@ -357,7 +358,7 @@ h3,
 }
 .app-shell .module-state {
   font: 600 16px/24px var(--pts-font-body);
-  color: var(--pts-success) !important;
+  color: var(--pts-success-text) !important;
 }
 .app-shell .module-state.soon {
   color: var(--pts-disabled) !important;
@@ -498,18 +499,24 @@ h3,
   color: var(--pts-text);
 }
 .app-shell .risk-hero.high .risk-emblem,
-.app-shell .risk-hero.critical .risk-emblem,
-.app-shell .risk-hero.high .verdict-label,
-.app-shell .risk-hero.critical .verdict-label {
+.app-shell .risk-hero.critical .risk-emblem {
   color: var(--pts-danger) !important;
 }
-.app-shell .risk-hero.medium .risk-emblem,
-.app-shell .risk-hero.medium .verdict-label {
+.app-shell .risk-hero.medium .risk-emblem {
   color: var(--pts-warning) !important;
 }
-.app-shell .risk-hero.low .risk-emblem,
-.app-shell .risk-hero.low .verdict-label {
+.app-shell .risk-hero.low .risk-emblem {
   color: var(--pts-success) !important;
+}
+.app-shell .risk-hero.high .verdict-label,
+.app-shell .risk-hero.critical .verdict-label {
+  color: var(--pts-danger-text) !important;
+}
+.app-shell .risk-hero.medium .verdict-label {
+  color: var(--pts-warning-text) !important;
+}
+.app-shell .risk-hero.low .verdict-label {
+  color: var(--pts-success-text) !important;
 }
 .app-shell .risk-hero.unknown .verdict-label {
   color: var(--pts-text) !important;
@@ -551,6 +558,12 @@ h3,
 .app-shell .health-attention h3 svg {
   color: var(--pts-warning);
 }
+.app-shell .health-positive h3 {
+  color: var(--pts-success-text);
+}
+.app-shell .health-attention h3 {
+  color: var(--pts-warning-text);
+}
 .app-shell .plain-finding strong {
   color: var(--pts-heading);
   font-size: 15px !important;
@@ -583,13 +596,13 @@ h3,
   background: var(--pts-success) !important;
 }
 .app-shell .strength-1 {
-  color: var(--pts-danger) !important;
+  color: var(--pts-danger-text) !important;
 }
 .app-shell .strength-2 {
-  color: var(--pts-warning) !important;
+  color: var(--pts-warning-text) !important;
 }
 .app-shell .strength-3 {
-  color: var(--pts-success) !important;
+  color: var(--pts-success-text) !important;
 }
 .app-shell .vault-tabs button.current {
   background: var(--pts-surface-2) !important;
@@ -628,17 +641,17 @@ h3,
 }
 .app-shell .risk-pill.low,
 .app-shell .finding-severity.low {
-  color: var(--pts-success) !important;
+  color: var(--pts-success-text) !important;
 }
 .app-shell .risk-pill.medium,
 .app-shell .finding-severity.medium {
-  color: var(--pts-warning) !important;
+  color: var(--pts-warning-text) !important;
 }
 .app-shell .risk-pill.high,
 .app-shell .risk-pill.critical,
 .app-shell .finding-severity.high,
 .app-shell .finding-severity.critical {
-  color: var(--pts-danger) !important;
+  color: var(--pts-danger-text) !important;
 }
 .app-shell .modal-backdrop {
   background: #050914e9;
@@ -708,14 +721,6 @@ h3,
   .app-shell .password-workspace,
   .app-shell .password-vault {
     padding: 18px !important;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .app-shell *,
-  .app-shell *::before,
-  .app-shell *::after {
-    transition: none !important;
-    animation: none !important;
   }
 }
 
@@ -806,7 +811,7 @@ h3,
   }
 }
 
-/* Contrastes et lecture seniors — Atkinson Hyperlegible Next (OFL).
+/* Contrastes et lecture seniors — Lexend (OFL).
  * Blanc sur bleu primaire #2563eb : contraste AA pour texte normal.
  * Revue WCAG complète restant à mener ; ce sont des améliorations ciblées. */
 .app-shell h1,
@@ -1017,5 +1022,24 @@ h3,
   .app-shell .module-card.upcoming strong {
     font-size: 17px !important;
     line-height: 24px !important;
+  }
+}
+
+/* Focus clavier visible — contrôles natifs et éléments interactifs personnalisés. */
+.app-shell *:focus-visible {
+  outline: 3px solid #60a5fa !important;
+  outline-offset: 3px !important;
+  border-radius: 4px;
+}
+
+/* Moins de mouvements pour les utilisateurs qui l'ont demandé à leur système. */
+@media (prefers-reduced-motion: reduce) {
+  .app-shell *,
+  .app-shell *::before,
+  .app-shell *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

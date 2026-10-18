@@ -295,9 +295,11 @@ function Report({ report, record, onBack }) {
         "Vérifiez l’identité du site ou de l’expéditeur avant de communiquer des données personnelles.",
     },
     Faible: {
-      heading: "AUCUNE ALERTE MAJEURE REPÉRÉE",
+      // "Aucun signalement connu" suggérerait une réputation externe vérifiée,
+      // ce que la V0.3 ne fait pas. Décrire uniquement les règles appliquées.
+      heading: "AUCUN INDICE MAJEUR DÉTECTÉ",
       action:
-        "Restez vigilant : les contrôles réalisés ne prouvent pas que ce contenu est sans danger.",
+        "Cela ne prouve pas que ce contenu est sans danger. Restez toujours vigilant.",
     },
     Indéterminé: {
       heading: "VÉRIFICATION INCOMPLÈTE",

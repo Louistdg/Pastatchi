@@ -2226,7 +2226,7 @@ a {
   --text-primary: #f8fafc;
   --text-secondary: #a7b5c9;
   --accent-color: #3b82f6;
-  font-family: Inter, "Segoe UI", Arial, sans-serif;
+  font-family: Lexend, "Segoe UI", Arial, sans-serif;
   color: var(--text-primary);
   background: var(--bg-base);
   font-size: 16px;
@@ -2238,7 +2238,7 @@ body {
 h1,
 h2,
 h3 {
-  font-family: Inter, "Segoe UI", Arial, sans-serif;
+  font-family: Lexend, "Segoe UI", Arial, sans-serif;
   letter-spacing: -0.02em;
 }
 .app-shell {

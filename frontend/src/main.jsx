@@ -1,10 +1,10 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App.jsx";
-import "@fontsource/atkinson-hyperlegible-next/latin-400.css";
-import "@fontsource/atkinson-hyperlegible-next/latin-500.css";
-import "@fontsource/atkinson-hyperlegible-next/latin-600.css";
-import "@fontsource/atkinson-hyperlegible-next/latin-700.css";
+import "@fontsource/lexend/latin-400.css";
+import "@fontsource/lexend/latin-500.css";
+import "@fontsource/lexend/latin-600.css";
+import "@fontsource/lexend/latin-700.css";
 import "@fontsource/space-grotesk/latin-600.css";
 import "@fontsource/space-grotesk/latin-700.css";
 import "@fontsource/jetbrains-mono/latin-400.css";

@@ -29,9 +29,10 @@ test("palette officielle et styles sémantiques", () => {
 
 test("polices chargées localement sans dépendance Google Fonts", () => {
   const main = file("../src/main.jsx");
-  assert.match(main, /@fontsource\/atkinson-hyperlegible-next\/latin-400.css/);
-  assert.match(main, /@fontsource\/atkinson-hyperlegible-next\/latin-600.css/);
+  assert.match(main, /@fontsource\/lexend\/latin-400.css/);
+  assert.match(main, /@fontsource\/lexend\/latin-600.css/);
   assert.doesNotMatch(main, /@fontsource\/inter\//);
+  assert.doesNotMatch(main, /@fontsource\/atkinson-hyperlegible-next\//);
   assert.match(main, /@fontsource\/space-grotesk\/latin-600.css/);
   assert.match(main, /@fontsource\/jetbrains-mono\/latin-400.css/);
   assert.match(main, /design-system.css/);
@@ -66,24 +67,66 @@ function contrast(a, b) {
   return (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05);
 }
 
-test("couleurs de lecture : contraste WCAG AA calculé sur les jetons", () => {
+test("contrastes essentiels des jetons principaux et des statuts", () => {
   const white = "#ffffff";
   const primary = cssToken("--pts-primary");
   const hover = cssToken("--pts-primary-hover");
   const surface = cssToken("--pts-surface-1");
   const fg = cssToken("--pts-text");
   const muted = cssToken("--pts-muted");
+  const successText = cssToken("--pts-success-text");
+  const dangerText = cssToken("--pts-danger-text");
+  const warningText = cssToken("--pts-warning-text");
   assert.ok(contrast(white, primary) >= 4.5, "Texte blanc insuffisant sur bouton principal");
   assert.ok(contrast(white, hover) >= 4.5, "Texte blanc insuffisant sur bouton au survol");
   assert.ok(contrast(fg, surface) >= 4.5, "Contraste du texte courant insuffisant");
   assert.ok(contrast(muted, surface) >= 4.5, "Contraste du texte secondaire insuffisant");
+  assert.ok(contrast(successText, surface) >= 4.5, "Texte succès insuffisant");
+  assert.ok(contrast(dangerText, surface) >= 4.5, "Texte danger insuffisant");
+  assert.ok(contrast(warningText, surface) >= 4.5, "Texte avertissement insuffisant");
 });
 
-test("mise en page lisible : corps 17px, boutons 16px, police Hyperlegible et titres aérés", () => {
+test("mise en page lisible : corps 17px, boutons 16px, Lexend et titres aérés", () => {
   const css = file("../src/design-system.css");
-  assert.match(css, /--pts-font-body:\s*"Atkinson Hyperlegible Next"/);
-  assert.match(css, /--pts-font-heading:\s*"Atkinson Hyperlegible Next"/);
+  assert.match(css, /--pts-font-body:\s*"Lexend"/);
+  assert.match(css, /--pts-font-heading:\s*"Lexend"/);
   assert.match(css, /font-size: 17px;\s*line-height: 27px;/);
   assert.match(css, /\.app-shell \.sidebar \.nav-item\s*\{[\s\S]*?font-size: 16px !important/);
   assert.match(css, /\.app-shell \.hero h1\s*\{[\s\S]*?font-size: 36px !important/);
+});
+
+test("aucune police Inter ou Atkinson dans les actifs frontaux et les dépendances", () => {
+  const main = file("../src/main.jsx");
+  const css = file("../src/design-system.css");
+  const old = file("../src/styles.css");
+  const pkg = file("../package.json");
+  const lock = file("../package-lock.json");
+  for (const [filename, contents] of [["main.jsx", main], ["design-system.css", css], ["styles.css", old]]) {
+    assert.doesNotMatch(contents, /\b(?:Inter|Atkinson Hyperlegible Next)\b|@fontsource\/(?:inter|atkinson-hyperlegible-next)\//i, filename);
+  }
+  assert.ok(pkg.includes("@fontsource/lexend"), "Lexend absent des dépendances");
+  assert.ok(!pkg.includes("@fontsource/inter"), "Inter encore déclaré");
+  assert.ok(!pkg.includes("@fontsource/atkinson-hyperlegible-next"), "Atkinson encore déclaré");
+  assert.ok(!lock.includes("node_modules/@fontsource/inter"), "Inter encore dans le lockfile");
+  assert.ok(!lock.includes("node_modules/@fontsource/atkinson-hyperlegible-next"), "Atkinson encore dans le lockfile");
+});
+
+test("statuts en texte contrasté, focus et mouvement réduit", () => {
+  const css = file("../src/design-system.css");
+  for (const token of ["success-text", "danger-text", "warning-text"]) {
+    assert.ok(css.includes("var(--pts-" + token + ")"), "Variante de statut manquante : " + token);
+  }
+  assert.match(css, /\.app-shell \*:focus-visible\s*\{/);
+  assert.match(css, /outline:\s*3px solid #60a5fa !important/);
+  assert.match(css, /@media \(prefers-reduced-motion: reduce\)/);
+  assert.match(css, /scroll-behavior:\s*auto !important/);
+});
+
+test("rapport faible : ne suggère pas une réputation externe vérifiée", () => {
+  const app = file("../src/App.jsx");
+  const messages = app.match(/const messages = \{[\s\S]*?\n  \};/);
+  assert.ok(messages);
+  assert.match(messages[0], /AUCUN INDICE MAJEUR DÉTECTÉ/);
+  assert.match(messages[0], /Cela ne prouve pas que ce contenu est sans danger/);
+  assert.doesNotMatch(messages[0], /AUCUN SIGNALEMENT CONNU DÉTECTÉ/);
 });

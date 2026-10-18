@@ -85,6 +85,45 @@ class LargePageTests(unittest.TestCase):
         self.assertTrue(report["collection"]["partial_inspection"])
         self.assertEqual(report["collection"]["inspected_bytes"], MAX_BYTES)
 
+    def test_420001_bytes_html_is_fully_inspected(self):
+        # Régression de la limite V0.3 de 420 000 octets.
+        body = b"<html><body>" + b"a" * (420_001 - len(b"<html><body>"))
+        response = FakeResponse(body)
+        result, _ = self.fetch(response, allow_partial=True)
+        self.assertEqual(len(result["body"]), 420_001)
+        self.assertFalse(result["truncated"])
+        self.assertEqual(response.read_count, [MAX_BYTES + 1])
+        with patch("app.urlscan.fetch_site", return_value=(result, [{"url": result["url"], "status": 200}])):
+            report = analyze_url("https://example.org/", mode="standard")
+        self.assertFalse(report["collection"]["partial_inspection"])
+        self.assertFalse(any(c["name"] == "Taille de la page" for c in report["checks"]))
+        self.assertTrue(any(c["name"] == "HTML et formulaires" and c["status"] == "effectué"
+                            for c in report["checks"]))
+
+    def test_exact_cap_html_not_falsely_marked_partial(self):
+        body = b"<html><body>" + b"b" * (MAX_BYTES - len(b"<html><body>"))
+        response = FakeResponse(body)
+        result, _ = self.fetch(response, allow_partial=True)
+        self.assertEqual(len(result["body"]), MAX_BYTES)
+        self.assertFalse(result["truncated"])
+        with patch("app.urlscan.fetch_site", return_value=(result, [{"url": result["url"], "status": 200}])):
+            report = analyze_url("https://example.org/", mode="renforce")
+        self.assertFalse(report["collection"]["partial_inspection"])
+        self.assertFalse(any(c["name"] == "Taille de la page" for c in report["checks"]))
+
+    def test_partial_size_check_reports_only_inspected_bytes(self):
+        body = b"<html><body>" + b"b" * (MAX_BYTES + 50)
+        response = FakeResponse(body)
+        result, _ = self.fetch(response, allow_partial=True)
+        with patch("app.urlscan.fetch_site", return_value=(result, [{"url": result["url"], "status": 200}])):
+            report = analyze_url("https://example.org/", mode="standard")
+        checks = [check for check in report["checks"] if check["name"] == "Taille de la page"]
+        self.assertEqual(len(checks), 1)
+        self.assertEqual(checks[0]["status"], "partiel")
+        self.assertIn(f"{MAX_BYTES:,} octets", checks[0]["detail"])
+        self.assertIn("fin n'a pas été inspectée", checks[0]["detail"])
+        self.assertEqual(report["risk"], "Indéterminé")
+
     def test_html_content_length_large_is_not_rejected_before_read(self):
         response = FakeResponse(b"<html><body>court</body></html>", content_length=50_000_000)
         result, _ = self.fetch(response, allow_partial=True)

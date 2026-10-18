@@ -307,6 +307,17 @@ def analyze_url(url: str, mode: str = "renforce", external_consent: bool = False
                    "detail": f"{max(0,len(chain)-1)} saut(s) vérifié(s), destination contrôlée." if fetched else "Contrôle interrompu."})
 
     partial = bool(fetched and fetched.get("truncated"))
+    if partial:
+        # Contrôle distinct pour rendre la limite visible dans le rapport expert.
+        # Ne jamais présenter les octets omis comme vérifiés.
+        examined = len(fetched["body"])
+        checks.append({
+            "name": "Taille de la page", "status": "partiel",
+            "detail": (
+                f"{examined:,} octets du début lus, plafond de {MAX_BYTES:,} octets. "
+                "La page annoncée ou reçue est plus volumineuse ; la fin n'a pas été inspectée."
+            )
+        })
     privacy = {"data_requested": [], "form_count": 0, "third_party_domains": [], "known_trackers": [], "observed_cookies": 0,
                "observed_transmissions": [], "partial_inspection": partial,
                "inspected_bytes": len(fetched["body"]) if fetched else 0,

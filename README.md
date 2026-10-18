@@ -2,6 +2,8 @@
 
 **PastaTshield V0.3 (prototype local)** — « Un doute ? On vérifie. »
 
+**Pour une revue indépendante :** commencez par [README-AUDIT.md](README-AUDIT.md) et [THREAT_MODEL.md](THREAT_MODEL.md). Les contrôles existants ne constituent pas une certification.
+
 Application web responsive de prévention des arnaques FR/BE, exécutée sur la machine de l'utilisateur.
 
 ## Fonctions qui fonctionnent déjà

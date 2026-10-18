@@ -1,0 +1,3 @@
+# Conserver les octets exacts du HTML public capturé pour la reproductibilité des tests.
+# Sans ceci, Git peut normaliser CRLF/LF et invalider son empreinte SHA-256.
+backend/tests/fixtures/wikipedia.html -text

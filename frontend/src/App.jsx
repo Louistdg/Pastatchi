@@ -57,7 +57,7 @@ const MODULES = [
     active: true,
   },
   {
-    label: "SMS",
+    label: "Message",
     detail: "Déceler une tentative de fraude",
     icon: MessageCircle,
     type: "text",
@@ -102,6 +102,35 @@ const MODULES = [
     active: false,
   },
 ];
+function ModuleCard({ module, onLaunch }) {
+  const Icon = module.icon;
+  return (
+    <button
+      type="button"
+      disabled={!module.active}
+      className={
+        "module-card glass " + (module.active ? "available" : "upcoming")
+      }
+      onClick={() => onLaunch(module.type)}
+      aria-label={
+        module.active
+          ? module.label + " : lancer une analyse"
+          : module.label + " : bientôt disponible en V2"
+      }
+    >
+      <div className="module-icon">
+        <Icon size={27} />
+      </div>
+      <strong>{module.label}</strong>
+      <small>{module.detail}</small>
+      <span className={"module-state " + (module.active ? "ready" : "soon")}>
+        <i aria-hidden="true" />
+        {module.active ? "Disponible" : "Bientôt"}
+      </span>
+    </button>
+  );
+}
+
 const RISK_LABELS = {
   Faible: "Risque faible",
   Modéré: "Risque modéré",
@@ -178,191 +207,427 @@ function RiskChip({ risk }) {
   );
 }
 function Report({ report, record, onBack }) {
-  const [detail, setDetail] = useState(false);
+  const [view, setView] = useState("simple");
   if (!report) return null;
-  const copy = () =>
-    navigator.clipboard
-      ?.writeText(
-        [
-          "PastaTshield — Rapport d’analyse",
-          RISK_LABELS[report.risk],
-          report.summary,
-          "\nIndicateurs:",
-          ...report.findings.map((f) => "- " + f.title + " : " + f.reason),
-          "\nContrôles:",
-          ...report.checks.map(
-            (c) => "- " + c.name + " : " + c.status + " — " + c.detail,
-          ),
-          "\nSources:",
-          ...report.sources.map((s) => "- " + s.name + " : " + s.status),
-          "\nLimites:",
-          ...report.limitations,
-          "\nAbsence de détection ≠ sécurité garantie.",
-        ].join("\n"),
-      )
-      .catch(() => {});
+
+  const isUrl = report.kind === "url";
+  const checks = report.checks || [];
+  const findings = report.findings || [];
+  const privacy = report.collection;
+  const redirectCheck = checks.find((c) => c.name === "Redirections");
+  const pageCheck = checks.find((c) => c.name === "HTML et formulaires");
+  const connectionCheck = checks.find((c) => c.name === "Connexion au site");
+  const ageCheck = checks.find((c) => c.name?.includes("RDAP"));
+  const pageInspected = pageCheck?.status === "effectué";
+  const connectionVerified = connectionCheck?.status === "effectué";
+  const lastDestination = report.redirects?.at(-1)?.url || "";
+  const friendlyTitles = {
+    "Traceurs identifiés": "Outils de suivi repérés",
+    "Redirections à examiner": "Changement d’adresse à vérifier",
+    "Redirection non chiffrée": "Le site quitte une connexion chiffrée",
+    "Connexion non chiffrée": "Connexion non protégée",
+    "Domaine différent de l'organisme cité":
+      "L’adresse ne correspond pas à l’organisme annoncé",
+    "Multiples destinations": "Plusieurs liens vers des sites différents",
+    "Prise de contrôle à distance": "Un accès à votre ordinateur est demandé",
+    "Domaine très récent": "Le site est très récent",
+    "Domaine récent": "Le site a été créé récemment",
+    "Lien raccourci": "L’adresse du lien est masquée",
+    "Invitation WhatsApp à vérifier":
+      "Une invitation à discuter mérite votre attention",
+  };
+  const positives = [];
+
+  if (isUrl && connectionVerified && lastDestination.startsWith("https://")) {
+    positives.push({
+      title: "Connexion chiffrée",
+      detail:
+        "Cette visite de vérification a utilisé une connexion HTTPS. Cela ne garantit pas que le commerce est fiable.",
+    });
+  }
+  if (
+    isUrl &&
+    redirectCheck?.status === "effectué" &&
+    report.redirects?.length === 1
+  ) {
+    positives.push({
+      title: "Pas de redirection observée",
+      detail: "La page n’a pas changé d’adresse durant notre vérification.",
+    });
+  }
+  if (
+    isUrl &&
+    pageInspected &&
+    privacy &&
+    !privacy.data_requested?.includes("Mot de passe")
+  ) {
+    positives.push({
+      title: "Aucun mot de passe demandé dans la page examinée",
+      detail:
+        "Aucun champ de mot de passe n’a été repéré dans le code public reçu. D’autres pages peuvent en demander.",
+    });
+  }
+  if (!isUrl && findings.length === 0 && report.risk === "Faible") {
+    positives.push({
+      title: "Aucun signal habituel repéré",
+      detail:
+        "Les règles locales appliquées à ce message n’ont pas déclenché d’alerte. L’identité de l’expéditeur reste inconnue.",
+    });
+  }
+
+  const messages = {
+    Critique: {
+      heading: "DANGER IMPORTANT",
+      action:
+        "N’envoyez aucun code, mot de passe ou paiement. Vérifiez directement auprès de l’organisme officiel.",
+    },
+    Élevé: {
+      heading: "DANGER POSSIBLE",
+      action:
+        "Ne cliquez pas et ne donnez aucune information personnelle avant une vérification indépendante.",
+    },
+    Modéré: {
+      heading: "PRUDENCE RECOMMANDÉE",
+      action:
+        "Vérifiez l’identité du site ou de l’expéditeur avant de communiquer des données personnelles.",
+    },
+    Faible: {
+      heading: "AUCUNE ALERTE MAJEURE REPÉRÉE",
+      action:
+        "Restez vigilant : les contrôles réalisés ne prouvent pas que ce contenu est sans danger.",
+    },
+    Indéterminé: {
+      heading: "VÉRIFICATION INCOMPLÈTE",
+      action:
+        "Nous n’avons pas assez d’informations pour conclure. Vérifiez par un canal officiel indépendant.",
+    },
+  };
+  const headline = messages[report.risk] || messages.Indéterminé;
+  const copy = () => {
+    const lines = [
+      "PastaTshield — Bilan de sécurité",
+      headline.heading,
+      report.summary,
+      "Recommandations:",
+      ...(report.recommendations || []).map((r) => "- " + r),
+      "Indicateurs:",
+      ...findings.map((f) => "- " + f.title + " : " + f.reason),
+      "Contrôles:",
+      ...checks.map((c) => "- " + c.name + " : " + c.status + " — " + c.detail),
+      "Sources:",
+      ...(report.sources || []).map(
+        (s) => "- " + s.name + " : " + s.status + " — " + s.detail,
+      ),
+      "Limites:",
+      ...(report.limitations || []),
+      "Absence de détection ≠ sécurité garantie.",
+    ];
+    navigator.clipboard?.writeText(lines.join("\n")).catch(() => {});
+  };
+
   return (
-    <section className="report-panel glass" aria-live="polite">
+    <section className="report-panel glass report-readable" aria-live="polite">
       <div className="panel-heading">
         <div className="heading-icon">
-          <Activity size={18} />
+          <Activity size={20} />
         </div>
         <div>
-          <span className="overline">RÉSULTAT DE L'ANALYSE</span>
-          <h2>Votre diagnostic</h2>
+          <span className="overline">BILAN DE SÉCURITÉ</span>
+          <h2>Votre résultat</h2>
         </div>
         <button
+          type="button"
           className="icon-button"
-          aria-label="Retour à l'analyse"
+          aria-label="Retour à l’analyse"
           onClick={onBack}
         >
           <ArrowLeft size={18} />
         </button>
       </div>
-      <div className={"risk-overview " + (riskClass[report.risk] || "unknown")}>
-        <div className="risk-emblem">
-          <ShieldAlert size={31} />
-        </div>
-        <div>
-          <RiskChip risk={report.risk} />
-          <h3>{report.summary}</h3>
-          <p>Sur la base des vérifications réellement effectuées.</p>
-        </div>
-      </div>
-      <div className="report-grid">
-        <div className="report-section">
-          <h3>
-            <AlertTriangle size={17} /> Indicateurs détectés (
-            {report.findings.length})
-          </h3>
-          {report.findings.length ? (
-            report.findings.map((f, i) => (
-              <div className="finding" key={i}>
-                <span className={"finding-severity " + riskClass[f.severity]}>
-                  {f.severity}
-                </span>
-                <strong>{f.title}</strong>
-                <p>{f.reason}</p>
-                {f.evidence && <small>Indice : {f.evidence}</small>}
-              </div>
-            ))
+      <div
+        className={
+          "risk-overview risk-hero " + (riskClass[report.risk] || "unknown")
+        }
+        role="status"
+      >
+        <div className="risk-emblem" aria-hidden="true">
+          {report.risk === "Faible" ? (
+            <CheckCircle2 size={32} />
+          ) : report.risk === "Indéterminé" ? (
+            <Info size={32} />
           ) : (
-            <div className="soft-note">
-              Aucun indicateur déclenché par les règles locales. Cela ne prouve
-              pas l'absence de danger.
-            </div>
+            <AlertTriangle size={32} />
           )}
         </div>
-        <div className="report-section">
-          <h3>
-            <ListChecks size={17} /> Actions recommandées
-          </h3>
-          {(report.recommendations || []).map((r, i) => (
-            <div className="action-row" key={i}>
-              <span className="step">{i + 1}</span>
-              <span>{r}</span>
-            </div>
-          ))}
-          <div className="report-action-bar">
-            <button className="secondary-btn" onClick={copy}>
-              <Copy size={15} /> Copier le rapport
-            </button>
-            <button
-              className="secondary-btn"
-              onClick={() => setDetail(!detail)}
-            >
-              <Eye size={15} /> {detail ? "Masquer" : "Voir"} les preuves
-            </button>
-          </div>
+        <div>
+          <p className="verdict-label">{headline.heading}</p>
+          <h3>{report.summary}</h3>
+          <p className="verdict-action">{headline.action}</p>
         </div>
       </div>
-      {report.collection && (
-        <div className="collection-card">
-          <h3>
-            <Eye size={18} /> Que peut collecter ce site ?
-          </h3>
-          <p>
-            Indications extraites du HTML visible, sans exécuter les scripts.
-            Une capacité de collecte n'est pas une transmission observée.
-          </p>
-          <div className="collection-grid">
-            <span>Champs repérés</span>
-            <strong>
-              {report.collection.data_requested?.join(", ") ||
-                "Aucun champ sensible identifié"}
-            </strong>
-            <span>Formulaires</span>
-            <strong>{report.collection.form_count}</strong>
-            <span>Domaines tiers référencés</span>
-            <strong>
-              {report.collection.third_party_domains?.join(", ") ||
-                "Aucun repéré"}
-            </strong>
-            <span>Traceurs connus référencés</span>
-            <strong>
-              {report.collection.known_trackers?.join(", ") || "Aucun repéré"}
-            </strong>
-            <span>Cookies dans la réponse</span>
-            <strong>{report.collection.observed_cookies || 0}</strong>
-            <span>Échanges observés</span>
-            <strong>Aucun trafic de sous-ressource exécuté</strong>
-          </div>
-          <p className="caution-small">
-            Non vérifié : {report.collection.not_observed}
-          </p>
-        </div>
-      )}
-      {detail && (
-        <div className="evidence">
-          <div className="report-section">
-            <h3>
-              <CheckCircle2 size={17} /> Ce qui a été vérifié
-            </h3>
-            {report.checks.map((c, i) => (
-              <div key={i} className="evidence-line">
-                <span
-                  className={c.status === "effectué" ? "state-yes" : "state-no"}
-                >
-                  {c.status}
-                </span>
-                <strong>{c.name}</strong>
-                <p>{c.detail}</p>
-              </div>
-            ))}
-          </div>
-          <div className="report-section">
-            <h3>
-              <Globe2 size={17} /> Sources
-            </h3>
-            {report.sources.map((s, i) => (
-              <div className="evidence-line" key={i}>
-                <span
-                  className={s.status === "effectué" ? "state-yes" : "state-no"}
-                >
-                  {s.status}
-                </span>
-                <strong>{s.name}</strong>
-                <p>{s.detail}</p>
-              </div>
-            ))}
-          </div>
-          <div className="report-section">
-            <h3>
-              <Info size={17} /> Limites et éléments non vérifiés
-            </h3>
-            <ul>
-              {report.limitations.map((l, i) => (
-                <li key={i}>{l}</li>
+      <div
+        className="report-view-switch"
+        role="group"
+        aria-label="Niveau de détail"
+      >
+        <button
+          type="button"
+          className={view === "simple" ? "selected" : ""}
+          aria-pressed={view === "simple"}
+          onClick={() => setView("simple")}
+        >
+          Vue simple
+        </button>
+        <button
+          type="button"
+          className={view === "expert" ? "selected" : ""}
+          aria-pressed={view === "expert"}
+          onClick={() => setView("expert")}
+        >
+          Vue experte
+        </button>
+      </div>
+      {view === "simple" ? (
+        <>
+          <div className="health-cards">
+            <div className="health-card health-positive">
+              <h3>
+                <CheckCircle2 size={22} /> Les bons points observés
+              </h3>
+              {positives.length ? (
+                positives.map((p, i) => (
+                  <div className="plain-finding" key={i}>
+                    <strong>{p.title}</strong>
+                    <p>{p.detail}</p>
+                  </div>
+                ))
+              ) : (
+                <p className="no-positives">
+                  Aucun point rassurant n’a pu être établi avec les contrôles
+                  disponibles.
+                </p>
+              )}
+            </div>
+            <div className="health-card health-attention">
+              <h3>
+                <AlertTriangle size={22} /> Ce qu’il faut savoir
+              </h3>
+              {findings.map((f, i) => (
+                <div className="plain-finding" key={i}>
+                  <strong>{friendlyTitles[f.title] || f.title}</strong>
+                  <p>{f.reason}</p>
+                </div>
               ))}
-            </ul>
+              {isUrl && privacy && pageInspected && (
+                <>
+                  <div className="plain-finding">
+                    <strong>Outils de suivi</strong>
+                    <p>
+                      {(privacy.known_trackers || []).length
+                        ? privacy.known_trackers.length +
+                          " service(s) de suivi référencé(s) dans la page. Leur fonctionnement réel n’a pas été vérifié."
+                        : "Aucun outil de suivi connu n’a été identifié parmi les ressources référencées."}
+                    </p>
+                  </div>
+                  <div className="plain-finding">
+                    <strong>Cookies et services extérieurs</strong>
+                    <p>
+                      La réponse reçue a déclaré {privacy.observed_cookies || 0}{" "}
+                      cookie(s). {privacy.third_party_domains?.length || 0}{" "}
+                      domaine(s) extérieur(s) ont été référencés dans le code
+                      public.
+                    </p>
+                  </div>
+                  {privacy.data_requested?.length > 0 && (
+                    <div className="plain-finding">
+                      <strong>Informations demandées sur cette page</strong>
+                      <p>
+                        {privacy.data_requested.join(", ")}. Leur transmission
+                        n’a pas été observée.
+                      </p>
+                    </div>
+                  )}
+                </>
+              )}
+              {isUrl && (
+                <div className="plain-finding">
+                  <strong>Âge du site</strong>
+                  <p>
+                    {ageCheck?.status === "effectué"
+                      ? "Date d’enregistrement consultée. " +
+                        ageCheck.detail.replace(/Enregistrement\s*:/, "Date :")
+                      : "Non vérifié pour le moment. Les sites frauduleux utilisent parfois des noms de domaine très récents."}
+                  </p>
+                </div>
+              )}
+              {!findings.length && !isUrl && (
+                <p>
+                  Le message ne présente aucun des indices habituels recherchés
+                  par nos règles locales.
+                </p>
+              )}
+              {report.risk === "Indéterminé" && (
+                <p className="unknown-advice">
+                  Certaines vérifications n’ont pas abouti. Ne considérez pas ce
+                  résultat comme une autorisation de continuer.
+                </p>
+              )}
+            </div>
           </div>
-        </div>
+          <div className="recommendation-panel">
+            <h3>
+              <ListChecks size={21} /> Ce que nous vous conseillons
+            </h3>
+            <ol>
+              {(report.recommendations || []).map((r, i) => (
+                <li key={i}>{r}</li>
+              ))}
+            </ol>
+          </div>
+          <p className="report-caution">
+            <Shield size={18} />
+            PastaTshield examine uniquement les éléments accessibles pendant
+            cette vérification. Il ne peut pas garantir que le site ou le
+            message est sûr à 100 %.
+          </p>
+        </>
+      ) : (
+        <>
+          <div className="report-grid">
+            <div className="report-section">
+              <h3>
+                <AlertTriangle size={17} /> Indicateurs techniques (
+                {findings.length})
+              </h3>
+              {findings.length ? (
+                findings.map((f, i) => (
+                  <div className="finding" key={i}>
+                    <span
+                      className={
+                        "finding-severity " +
+                        (riskClass[f.severity] || "unknown")
+                      }
+                    >
+                      {f.severity}
+                    </span>
+                    <strong>{f.title}</strong>
+                    <p>{f.reason}</p>
+                    {f.evidence && <small>Indice : {f.evidence}</small>}
+                  </div>
+                ))
+              ) : (
+                <div className="soft-note">
+                  Aucun indicateur détecté par les règles appliquées.
+                </div>
+              )}
+            </div>
+            <div className="report-section">
+              <h3>
+                <ListChecks size={17} /> Actions recommandées
+              </h3>
+              {(report.recommendations || []).map((r, i) => (
+                <div className="action-row" key={i}>
+                  <span className="step">{i + 1}</span>
+                  <span>{r}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          {isUrl && privacy && (
+            <div className="collection-card">
+              <h3>
+                <Eye size={18} /> Collecte potentielle — HTML statique
+              </h3>
+              <p>
+                Éléments référencés, sans exécuter de JavaScript ni prouver la
+                transmission des données.
+              </p>
+              <div className="collection-grid">
+                <span>Champs repérés</span>
+                <strong>
+                  {privacy.data_requested?.join(", ") ||
+                    "Aucun champ sensible identifié"}
+                </strong>
+                <span>Formulaires</span>
+                <strong>{privacy.form_count}</strong>
+                <span>Domaines tiers référencés</span>
+                <strong>
+                  {privacy.third_party_domains?.join(", ") || "Aucun repéré"}
+                </strong>
+                <span>Traceurs connus référencés</span>
+                <strong>
+                  {privacy.known_trackers?.join(", ") || "Aucun repéré"}
+                </strong>
+                <span>Cookies déclarés</span>
+                <strong>{privacy.observed_cookies || 0}</strong>
+                <span>Transmissions observées</span>
+                <strong>Aucune sous-ressource exécutée</strong>
+              </div>
+              <p className="caution-small">
+                Non vérifié : {privacy.not_observed}
+              </p>
+            </div>
+          )}
+          <div className="evidence">
+            <div className="report-section">
+              <h3>
+                <CheckCircle2 size={17} /> Ce qui a été vérifié
+              </h3>
+              {checks.map((x, i) => (
+                <div className="evidence-line" key={i}>
+                  <span
+                    className={
+                      x.status === "effectué" ? "state-yes" : "state-no"
+                    }
+                  >
+                    {x.status}
+                  </span>
+                  <strong>{x.name}</strong>
+                  <p>{x.detail}</p>
+                </div>
+              ))}
+            </div>
+            <div className="report-section">
+              <h3>
+                <Globe2 size={17} /> Sources utilisées ou indisponibles
+              </h3>
+              {(report.sources || []).map((x, i) => (
+                <div className="evidence-line" key={i}>
+                  <span
+                    className={
+                      x.status === "effectué" ? "state-yes" : "state-no"
+                    }
+                  >
+                    {x.status}
+                  </span>
+                  <strong>{x.name}</strong>
+                  <p>{x.detail}</p>
+                </div>
+              ))}
+            </div>
+            <div className="report-section">
+              <h3>
+                <Info size={17} /> Limites et contrôles impossibles
+              </h3>
+              <ul>
+                {(report.limitations || []).map((x, i) => (
+                  <li key={i}>{x}</li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </>
       )}
+      <div className="report-actions-bottom">
+        <button className="secondary-btn" onClick={copy}>
+          <Copy size={16} /> Copier le rapport complet
+        </button>
+      </div>
       <div className="report-footnote">
-        <LockKeyhole size={15} /> Analyse à la demande. Ne fournit aucune
-        garantie absolue de sécurité.{" "}
+        <LockKeyhole size={15} /> Analyse à la demande. Absence de détection ≠
+        sécurité garantie.
         {record?.created_at &&
-          "Enregistrée le " + dateLabel(record.created_at) + "."}
+          " Enregistrée le " + dateLabel(record.created_at) + "."}
       </div>
     </section>
   );
@@ -453,8 +718,7 @@ function App() {
     [error, setError] = useState("");
   const [history, setHistory] = useState([]),
     [menuOpen, setMenuOpen] = useState(false),
-    [recover, setRecover] = useState(false),
-    [showLimits, setShowLimits] = useState(false);
+    [recover, setRecover] = useState(false);
   const refresh = () =>
     api("/api/v1/history")
       .then((res) => setHistory(res.items))
@@ -587,18 +851,24 @@ function App() {
       </aside>
       <main className="main-area">
         <header className="topbar">
-          <div className="quick-search">
-            <Search size={21} />
-            <button onClick={() => launch("text")}>
-              Analyse rapide : e-mail, SMS ou texte...
-            </button>
-            <button className="analyze-top" onClick={() => launch("text")}>
-              Analyser <ArrowRight size={17} />
-            </button>
-          </div>
+          {page === "analyze" ? (
+            <div className="quick-search quick-search-static">
+              <LockKeyhole size={18} />
+              <span>
+                Vérification volontaire — aucun contenu analysé en arrière-plan
+              </span>
+            </div>
+          ) : (
+            <div className="quick-search">
+              <Search size={21} />
+              <button type="button" onClick={() => launch("text")}>
+                Vérifier un message ou un lien...
+              </button>
+            </div>
+          )}
           <div className="top-actions">
             <span className="top-private">
-              <LockKeyhole size={14} /> Local-first
+              <LockKeyhole size={14} /> Traitement local
             </span>
             <ShieldCheck size={23} />
           </div>
@@ -622,44 +892,35 @@ function App() {
               </button>
             </div>
             <div className="section-label">
-              <span className="violet-bullet" /> MODULES D'ANALYSE{" "}
+              <span className="violet-bullet" /> MODULES DISPONIBLES
               <span className="section-right">
-                7 modules • 4 parcours textuels / URL disponibles
+                4 parcours d’analyse, à votre demande
               </span>
             </div>
-            <div className="modules-grid">
-              {MODULES.map((m) => {
-                const I = m.icon;
-                return (
-                  <button
-                    key={m.label}
-                    disabled={!m.active}
-                    className={
-                      "module-card glass " +
-                      m.accent +
-                      (!m.active ? " disabled" : "")
-                    }
-                    onClick={() => launch(m.type)}
-                  >
-                    <div className="module-icon">
-                      <I size={29} />
-                    </div>
-                    <strong>{m.label}</strong>
-                    <small>{m.detail}</small>
-                    <span
-                      className={
-                        "module-state " + (m.active ? "ready" : "soon")
-                      }
-                    >
-                      <i />
-                      {m.active ? "Disponible" : "V2 — prévu"}
-                    </span>
-                  </button>
-                );
-              })}
+            <div className="modules-grid active-modules">
+              {MODULES.filter((m) => m.active).map((m) => (
+                <ModuleCard key={m.label} module={m} onLaunch={launch} />
+              ))}
             </div>
-            <div className="content-grid">
-              <section className="glass activity-panel">
+            <div className="upcoming-head">
+              <span>BIENTÔT — VERSION 2</span>
+              <small>Fonctionnalités prévues, non activées</small>
+            </div>
+            <div className="modules-grid upcoming-modules">
+              {MODULES.filter((m) => !m.active).map((m) => (
+                <ModuleCard key={m.label} module={m} onLaunch={launch} />
+              ))}
+            </div>
+            <div
+              className={
+                "content-grid " + (!history.length ? "history-empty" : "")
+              }
+            >
+              <section
+                className={
+                  "glass activity-panel " + (!history.length ? "is-empty" : "")
+                }
+              >
                 <div className="panel-title">
                   <div>
                     <span className="violet-bullet" /> HISTORIQUE RÉCENT
@@ -695,12 +956,11 @@ function App() {
                     ))}
                   </div>
                 ) : (
-                  <div className="empty-history">
-                    <Clock3 size={31} />
-                    <strong>Aucune analyse pour le moment</strong>
+                  <div className="empty-history compact-empty">
+                    <Clock3 size={20} />
                     <span>
-                      Vos vérifications apparaîtront ici, sans conserver votre
-                      message par défaut.
+                      <strong>Aucune analyse pour le moment.</strong> Vos
+                      vérifications apparaîtront ici.
                     </span>
                   </div>
                 )}
@@ -712,29 +972,13 @@ function App() {
                     CONFIDENTIALITÉ
                   </div>
                 </div>
-                <h3>Votre sécurité, sans surveillance cachée.</h3>
-                <p>
-                  PastaTshield ne lit pas automatiquement vos messages,
-                  n'exécute pas de fichiers suspects et n'envoie rien à une IA
-                  externe.
-                </p>
-                <button
-                  className="text-link"
-                  onClick={() => setShowLimits(!showLimits)}
-                >
-                  {showLimits
-                    ? "Masquer"
-                    : "Ce que PastaTshield ne fait jamais"}{" "}
-                  <ChevronDown size={15} />
-                </button>
-                {showLimits && (
-                  <ul>
-                    <li>Pas d'écoute ni de surveillance en arrière-plan.</li>
-                    <li>Pas de blocage automatique de sites.</li>
-                    <li>Pas de promesse de sécurité absolue.</li>
-                    <li>Pas d'analyse de fichiers en V1.</li>
-                  </ul>
-                )}
+                <h3>Vos données, vos décisions.</h3>
+                <ul className="trust-list">
+                  <li>Pas de surveillance cachée.</li>
+                  <li>Pas d’exécution de fichiers suspects.</li>
+                  <li>Pas d’envoi automatique à une IA externe.</li>
+                  <li>Aucune garantie de sécurité absolue.</li>
+                </ul>
               </section>
             </div>
             <button
@@ -774,7 +1018,7 @@ function App() {
                     className={type === "text" ? "active" : ""}
                     onClick={() => setType("text")}
                   >
-                    <Mail size={18} /> E-mail / SMS / texte
+                    <Mail size={18} /> E-mail / message / texte
                   </button>
                   <button
                     type="button"
@@ -792,7 +1036,7 @@ function App() {
                 {type === "text" ? (
                   <textarea
                     id="target"
-                    rows="8"
+                    rows="5"
                     maxLength="20000"
                     placeholder="Exemple : Votre colis est bloqué. Payez les frais de livraison immédiatement..."
                     value={value}
@@ -812,7 +1056,7 @@ function App() {
                 )}
                 <p className="input-helper">
                   {type === "text"
-                    ? "Règles locales FR/BE : urgence, demandes de codes, usurpation, liens et fraudes WhatsApp."
+                    ? "Cherche les signes de fraude les plus fréquents en France et en Belgique, sans envoyer votre message à une IA."
                     : "Inspection passive de l’URL publique et du HTML, sans exécuter de JavaScript ni charger de ressources externes."}
                 </p>
                 <div className="form-settings">
@@ -851,13 +1095,13 @@ function App() {
                     />
                     <span>
                       <strong>
-                        Autoriser une consultation du registre RDAP
+                        Consulter l’âge du site auprès d’un registre public
                       </strong>
                       <small>
-                        La demande transmet le domaine à un service tiers. Sans
-                        accord, seul le contrôle du site soumis est tenté.
-                        VirusTotal et Safe Browsing ne sont pas encore
-                        connectés.
+                        Si vous cochez cette option, le nom du site sera envoyé
+                        à un registre public pour rechercher sa date de
+                        création. Les autres contrôles de réputation ne sont pas
+                        encore disponibles.
                       </small>
                     </span>
                   </label>
@@ -914,15 +1158,27 @@ function App() {
                 votre contenu.
               </p>
             </div>
-            <div className="glass history-page">
-              <div className="panel-title">
-                <strong>{history.length} analyse(s) enregistrée(s)</strong>
+            <div
+              className={
+                "glass history-page " + (!history.length ? "is-empty" : "")
+              }
+            >
+              <div className="panel-title history-title-row">
+                <strong>
+                  {history.length}{" "}
+                  {history.length === 1
+                    ? "analyse enregistrée"
+                    : "analyses enregistrées"}
+                </strong>
                 <button
-                  className="secondary-btn"
+                  type="button"
+                  className="icon-button clear-history"
                   disabled={!history.length}
                   onClick={wipe}
+                  aria-label="Effacer tout l’historique local"
+                  title="Effacer tout l’historique"
                 >
-                  <Trash2 size={16} /> Effacer tout
+                  <Trash2 size={17} />
                 </button>
               </div>
               {history.length ? (
@@ -940,7 +1196,7 @@ function App() {
                       <small>
                         {item.kind === "url"
                           ? "Site web / URL"
-                          : "E-mail / SMS / texte"}{" "}
+                          : "E-mail / message / texte"}{" "}
                         • {dateLabel(item.created_at)}{" "}
                         {item.content_saved ? "• Contenu conservé" : ""}
                       </small>
@@ -950,10 +1206,12 @@ function App() {
                   </button>
                 ))
               ) : (
-                <div className="empty-history">
-                  <Clock3 size={32} />
-                  <strong>Historique vide</strong>
-                  <span>Vous n’avez pas encore lancé d’analyse.</span>
+                <div className="empty-history compact-empty">
+                  <Clock3 size={20} />
+                  <span>
+                    Aucune analyse enregistrée. Les prochaines vérifications
+                    apparaîtront ici.
+                  </span>
                 </div>
               )}
             </div>
@@ -974,7 +1232,7 @@ function App() {
                 Aucun agent caché.
               </p>
             </div>
-            <div className="glass feature-page">
+            <div className="glass feature-page protection-page">
               <ShieldCheck className="feature-symbol" size={50} />
               <h2>Protection à la demande</h2>
               <div className="protection-items">
@@ -1059,34 +1317,59 @@ function App() {
               </h1>
             </div>
             <div className="glass feature-page settings-page">
-              <h2>Niveau de vigilance par défaut</h2>
-              <p>
-                Ces modes modifient uniquement les vérifications proposées,
-                jamais vos permissions.
-              </p>
-              <select value={mode} onChange={(e) => setMode(e.target.value)}>
-                <option value="standard">Standard</option>
-                <option value="renforce">Renforcé (conseillé)</option>
-                <option value="maximum">Maximum</option>
-              </select>
-              <h2>Historique local</h2>
-              <p>
-                Résumé conservé par défaut. Vous pouvez effacer tous les
-                enregistrements locaux.
-              </p>
-              <button className="secondary-btn" onClick={wipe}>
-                <Trash2 size={16} /> Effacer l’historique
-              </button>
-              <h2>Ce que PastaTshield ne fait jamais</h2>
-              <ul>
-                <li>Pas de surveillance cachée des e-mails, SMS ou appels.</li>
-                <li>Pas d'envoi automatique à une IA externe.</li>
-                <li>Pas d'exécution des fichiers suspects.</li>
-                <li>Pas de blocage automatique de sites.</li>
-                <li>Pas de promesse de risque zéro.</li>
-              </ul>
-              <p className="muted small">
-                Version {VERSION} • Développement local • France / Belgique
+              <section className="settings-group">
+                <div className="settings-heading">
+                  <ShieldCheck size={20} />
+                  <h2>Niveau de vigilance</h2>
+                </div>
+                <p>
+                  Choisissez la profondeur des vérifications. Ce réglage ne
+                  modifie pas les permissions.
+                </p>
+                <label className="small-label" htmlFor="default-mode">
+                  Mode par défaut
+                </label>
+                <select
+                  id="default-mode"
+                  value={mode}
+                  onChange={(e) => setMode(e.target.value)}
+                >
+                  <option value="standard">Standard</option>
+                  <option value="renforce">Renforcé (conseillé)</option>
+                  <option value="maximum">Maximum</option>
+                </select>
+              </section>
+              <section className="settings-group">
+                <div className="settings-heading">
+                  <Clock3 size={20} />
+                  <h2>Historique local</h2>
+                </div>
+                <p>
+                  Vos analyses sont résumées localement. Effacez l’historique et
+                  le cache RDAP quand vous le souhaitez.
+                </p>
+                <button className="secondary-btn" onClick={wipe}>
+                  <Trash2 size={16} /> Effacer l’historique
+                </button>
+              </section>
+              <section className="settings-group settings-info">
+                <div className="settings-heading">
+                  <Info size={20} />
+                  <h2>Ce que PastaTshield ne fait jamais</h2>
+                </div>
+                <ul>
+                  <li>
+                    Pas de surveillance cachée des e-mails, SMS ou appels.
+                  </li>
+                  <li>Pas d’envoi automatique de contenus à une IA externe.</li>
+                  <li>Pas d’exécution des fichiers suspects.</li>
+                  <li>Pas de blocage automatique de sites.</li>
+                  <li>Pas de promesse de risque zéro.</li>
+                </ul>
+              </section>
+              <p className="settings-version">
+                PastaTshield V{VERSION} · Version alpha locale · France /
+                Belgique
               </p>
             </div>
           </div>
